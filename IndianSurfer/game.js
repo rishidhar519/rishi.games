@@ -633,16 +633,16 @@ function onKeyDown(event) {
     switch (event.code) {
         case 'ArrowLeft':
         case 'KeyA':
-            if (currentLane > -1) {
-                currentLane--;
+            if (currentLane < 1) {
+                currentLane++;
                 player.rotation.z = 0.3;
                 setTimeout(() => player.rotation.z = 0, 200);
             }
             break;
         case 'ArrowRight':
         case 'KeyD':
-            if (currentLane < 1) {
-                currentLane++;
+            if (currentLane > -1) {
+                currentLane--;
                 player.rotation.z = -0.3;
                 setTimeout(() => player.rotation.z = 0, 200);
             }
