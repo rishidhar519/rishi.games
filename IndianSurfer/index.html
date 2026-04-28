@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Indian Subway Surfer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Load Three.js globally -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <!-- UI Overlay -->
+        <div id="ui-layer">
+            <div id="active-powerups"></div>
+            
+            <div id="loading-screen" class="screen active">
+                <h1>LOADING 3D ASSETS...</h1>
+                <p>Please wait while we download realistic models.</p>
+            </div>
+            <div class="stats-container">
+                <div class="stat-box">
+                    <span class="stat-label">DISTANCE</span>
+                    <span class="stat-value" id="distance-val">0m</span>
+                </div>
+                <div class="stat-box coins-box">
+                    <span class="stat-label">MONEY (₹)</span>
+                    <span class="stat-value" id="coins-val">0</span>
+                </div>
+                <div class="stat-box total-coins-box">
+                    <span class="stat-label">TOTAL BANK (₹)</span>
+                    <span class="stat-value" id="total-coins-val">0</span>
+                </div>
+            </div>
+            
+            <div id="start-screen" class="screen">
+                <h1>INDIAN SURFER</h1>
+                <p>Use Left/Right Arrows to Switch Lanes. Up to Jump. Down to Roll.</p>
+                <br>
+                <button id="start-btn" class="btn">TAP TO PLAY</button>
+                <button id="shop-btn" class="btn shop-btn">OPEN SHOP 🛒</button>
+            </div>
+            
+            <div id="shop-screen" class="screen hidden">
+                <h1>UPGRADE SHOP</h1>
+                <div class="shop-items">
+                    <div class="shop-item">
+                        <h3>Magnet Duration</h3>
+                        <p>Pulls coins towards you automatically.</p>
+                        <div class="upgrade-bar"><div class="fill" id="magnet-level-bar"></div></div>
+                        <button class="btn buy-btn" id="buy-magnet" data-item="magnet">Buy (₹<span id="cost-magnet">100</span>)</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>2x Multiplier</h3>
+                        <p>Doubles the distance score you earn.</p>
+                        <div class="upgrade-bar"><div class="fill" id="multiplier-level-bar"></div></div>
+                        <button class="btn buy-btn" id="buy-multiplier" data-item="multiplier">Buy (₹<span id="cost-multiplier">100</span>)</button>
+                    </div>
+                    <div class="shop-item">
+                        <h3>Jetpack Duration</h3>
+                        <p>Fly over obstacles and collect sky coins!</p>
+                        <div class="upgrade-bar"><div class="fill" id="jetpack-level-bar"></div></div>
+                        <button class="btn buy-btn" id="buy-jetpack" data-item="jetpack">Buy (₹<span id="cost-jetpack">150</span>)</button>
+                    </div>
+                </div>
+                <br>
+                <button id="close-shop-btn" class="btn">CLOSE SHOP</button>
+            </div>
+
+            <div id="game-over-screen" class="screen">
+                <h2>GAME OVER!</h2>
+                <div class="final-stats">
+                    <p>Distance: <span id="final-distance">0</span>m</p>
+                    <p>Money Collected: ₹<span id="final-coins">0</span></p>
+                </div>
+                <button id="restart-btn">PLAY AGAIN</button>
+            </div>
+        </div>
+        <!-- Three.js Canvas will be injected here -->
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>

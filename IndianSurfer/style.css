@@ -1,0 +1,301 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden; /* Prevent scrolling */
+    font-family: 'Outfit', sans-serif;
+    background-color: #000;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to canvas if needed */
+    z-index: 10;
+}
+
+.stats-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.stat-box {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.coins-box {
+    background: rgba(50, 40, 0, 0.5);
+    border-color: rgba(255, 215, 0, 0.4);
+}
+
+.total-coins-box {
+    background: rgba(0, 50, 0, 0.5);
+    border-color: rgba(0, 255, 0, 0.4);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 900;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    color: #fff;
+}
+
+.coins-box .stat-value {
+    color: #ffd700;
+}
+
+.total-coins-box .stat-value {
+    color: #00ff00;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+h1 {
+    font-size: 5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    background: linear-gradient(to right, #ff9933, #ffffff, #138808); /* Indian flag colors */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 10px rgba(255, 153, 51, 0.4));
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h2 {
+    font-size: 4rem;
+    color: #ff3333;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 10px rgba(255, 51, 51, 0.4);
+}
+
+p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.final-stats {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    text-align: center;
+    background: rgba(255,255,255,0.1);
+    padding: 20px 40px;
+    border-radius: 15px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.final-stats p {
+    margin: 10px 0;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+#final-coins {
+    color: #ffd700;
+}
+
+/* --- Buttons --- */
+.btn {
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    color: #fff;
+    background: linear-gradient(45deg, #ff9933, #e67e22); /* Orange/Saffron gradient */
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(230, 126, 34, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+.shop-btn {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
+    margin-top: 15px;
+    font-size: 1.2rem;
+}
+
+.shop-btn:hover {
+    box-shadow: 0 10px 20px rgba(46, 204, 113, 0.6);
+}
+
+/* --- Shop Screen --- */
+.hidden {
+    display: none !important;
+}
+
+#shop-screen {
+    background: rgba(10, 15, 20, 0.95);
+}
+
+.shop-items {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 30px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.shop-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 15px 20px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shop-item h3 {
+    font-size: 1.2rem;
+    color: #f1c40f;
+    margin: 0;
+}
+
+.shop-item p {
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.upgrade-bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.upgrade-bar .fill {
+    height: 100%;
+    background: #2ecc71;
+    width: 0%; /* Dynamic */
+    transition: width 0.3s;
+}
+
+.buy-btn {
+    padding: 8px 15px;
+    font-size: 1rem;
+    margin-top: 5px;
+    align-self: flex-start;
+}
+
+.buy-btn:disabled {
+    background: #555;
+    color: #888;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* --- Active Powerups HUD --- */
+#active-powerups {
+    position: absolute;
+    top: 100px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.powerup-indicator {
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid;
+    padding: 10px 15px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 150px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.powerup-indicator.magnet { border-color: #3498db; color: #3498db; }
+.powerup-indicator.multiplier { border-color: #f1c40f; color: #f1c40f; }
+.powerup-indicator.jetpack { border-color: #e74c3c; color: #e74c3c; }
+
+.powerup-bar-bg {
+    flex-grow: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.powerup-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: currentColor;
+    transform-origin: left;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

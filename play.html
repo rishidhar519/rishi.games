@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Indian Surfer - Rishi Games</title>
+    <!-- Google Analytics (Placeholder) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YOUR_ID_HERE"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YOUR_ID_HERE');
+    </script>
+    <link rel="stylesheet" href="portal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="portal-header compact">
+        <a href="index.html" class="back-btn">⬅ Back to Games</a>
+        <div class="logo">🎮 Rishi.Games</div>
+    </header>
+
+    <div class="game-player-container">
+        <!-- iframe loads the actual game from the subfolder -->
+        <iframe src="IndianSurfer/index.html" frameborder="0" id="game-frame" allowfullscreen></iframe>
+    </div>
+    
+    <div class="game-details">
+        <h1>Indian Surfer</h1>
+        <p>Run through the streets and railways of India! Dodge trains, upgrade your power-ups, and buy items in the shop!</p>
+        <button class="fullscreen-btn" onclick="document.getElementById('game-frame').requestFullscreen()">⛶ Fullscreen</button>
+    </div>
+
+    <script>
+        // Ensure iframe captures keyboard focus immediately
+        window.onload = function() {
+            document.getElementById('game-frame').focus();
+        };
+    </script>
+</body>
+</html>
