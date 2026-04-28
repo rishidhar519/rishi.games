@@ -373,6 +373,10 @@ function init() {
         window.addEventListener('resize', onWindowResize);
         document.addEventListener('keydown', onKeyDown);
         
+        // Touch Controls
+        document.addEventListener('touchstart', handleTouchStart, {passive: false});
+        document.addEventListener('touchmove', handleTouchMove, {passive: false});
+        
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', resetGame);
         
@@ -668,6 +672,69 @@ function onKeyDown(event) {
             }
             break;
     }
+}
+
+// --- Touch Swipe Logic ---
+let xDown = null;
+let yDown = null;
+
+function handleTouchStart(evt) {
+    if(evt.target.tagName === 'BUTTON') return;
+    const firstTouch = evt.touches[0];
+    xDown = firstTouch.clientX;
+    yDown = firstTouch.clientY;
+}
+
+function handleTouchMove(evt) {
+    if (!xDown || !yDown || !isPlaying) return;
+
+    let xUp = evt.touches[0].clientX;
+    let yUp = evt.touches[0].clientY;
+
+    let xDiff = xDown - xUp;
+    let yDiff = yDown - yUp;
+
+    // Minimum swipe threshold
+    if(Math.abs(xDiff) < 30 && Math.abs(yDiff) < 30) return;
+
+    if (Math.abs(xDiff) > Math.abs(yDiff)) {
+        if (xDiff > 0) {
+            // left swipe
+            if (currentLane < 1) {
+                currentLane++;
+                player.rotation.z = 0.3;
+                setTimeout(() => player.rotation.z = 0, 200);
+            }
+        } else {
+            // right swipe
+            if (currentLane > -1) {
+                currentLane--;
+                player.rotation.z = -0.3;
+                setTimeout(() => player.rotation.z = 0, 200);
+            }
+        }
+    } else {
+        if (yDiff > 0) {
+            // up swipe
+            if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
+                isJumping = true;
+                yVelocity = JUMP_FORCE;
+            }
+        } else {
+            // down swipe
+            if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
+                isRolling = true;
+                rollTimer = 0.8;
+                player.rotation.x = Math.PI / 2 + 0.3; 
+                player.position.y -= 0.5;
+            } else if (isJumping) {
+                yVelocity = -JUMP_FORCE * 2.0; 
+            }
+        }
+    }
+    // Reset values
+    xDown = null;
+    yDown = null;
 }
 
 function startGame() {
