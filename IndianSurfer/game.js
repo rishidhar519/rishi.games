@@ -237,6 +237,8 @@ let totalCoins = parseInt(localStorage.getItem('indianSurferTotalCoins')) || 0;
 let upgrades = JSON.parse(localStorage.getItem('indianSurferUpgrades')) || {
     magnet: 1, multiplier: 1, jetpack: 1
 };
+let unlockedCharacters = JSON.parse(localStorage.getItem('indianSurferUnlockedChars')) || ['blue'];
+let equippedCharacter = localStorage.getItem('indianSurferEquippedChar') || 'blue';
 const MAX_UPGRADE_LEVEL = 5;
 
 // Active Powerups
@@ -296,12 +298,17 @@ function loadModels(callback) {
         player.scale.set(1.5, 1.5, 1.5);
         player.rotation.y = Math.PI; 
         
+        let initialColor = 0x3498db;
+        if(equippedCharacter === 'red') initialColor = 0xe74c3c;
+        if(equippedCharacter === 'green') initialColor = 0x2ecc71;
+        if(equippedCharacter === 'gold') initialColor = 0xf1c40f;
+
         player.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
                 child.material = child.material.clone();
-                child.material.color.setHex(0x3498db);
+                child.material.color.setHex(initialColor);
             }
         });
 
@@ -396,7 +403,32 @@ function init() {
         });
 
         document.querySelectorAll('.buy-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => buyUpgrade(e.target.dataset.item));
+            if(!btn.id.startsWith('char-')) {
+                btn.addEventListener('click', (e) => buyUpgrade(e.target.dataset.item));
+            } else {
+                btn.addEventListener('click', (e) => {
+                    const char = e.target.dataset.char;
+                    const color = parseInt(e.target.dataset.color);
+                    const cost = parseInt(e.target.dataset.cost);
+
+                    if (unlockedCharacters.includes(char)) {
+                        equippedCharacter = char;
+                        localStorage.setItem('indianSurferEquippedChar', equippedCharacter);
+                        updatePlayerColor(color);
+                        updateShopUI();
+                    } else if (totalCoins >= cost) {
+                        totalCoins -= cost;
+                        unlockedCharacters.push(char);
+                        equippedCharacter = char;
+                        localStorage.setItem('indianSurferTotalCoins', totalCoins);
+                        localStorage.setItem('indianSurferUnlockedChars', JSON.stringify(unlockedCharacters));
+                        localStorage.setItem('indianSurferEquippedChar', equippedCharacter);
+                        updatePlayerColor(color);
+                        if(totalCoinsEl) totalCoinsEl.innerText = totalCoins;
+                        updateShopUI();
+                    }
+                });
+            }
         });
 
         updateCamera();
@@ -423,6 +455,32 @@ function updateShopUI() {
         } else {
             document.getElementById(`cost-${item}`).innerText = cost;
             btn.disabled = totalCoins < cost;
+        }
+    });
+
+    ['blue', 'red', 'green', 'gold'].forEach(char => {
+        let btn = document.getElementById(`char-${char}`);
+        if(btn) {
+            if(equippedCharacter === char) {
+                btn.innerText = "EQUIPPED";
+                btn.disabled = true;
+            } else if (unlockedCharacters.includes(char)) {
+                btn.innerText = "EQUIP";
+                btn.disabled = false;
+            } else {
+                let cost = parseInt(btn.dataset.cost);
+                btn.innerText = `Buy (₹${cost})`;
+                btn.disabled = totalCoins < cost;
+            }
+        }
+    });
+}
+
+function updatePlayerColor(hexColor) {
+    if(!player) return;
+    player.traverse((child) => {
+        if (child.isMesh && child.material) {
+            child.material.color.setHex(hexColor);
         }
     });
 }
