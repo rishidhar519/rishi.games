@@ -1,0 +1,327 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Orbitron', sans-serif;
+    user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: #05050a;
+    overflow: hidden;
+    color: #fff;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #1a1a2e 0%, #05050a 100%);
+}
+
+#game-container canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* UI Layer over the canvas */
+#ui-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 500px;
+    height: 100%;
+    max-height: 800px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    background: rgba(5, 5, 10, 0.85); /* Semi-transparent so we can see 3D scene */
+    backdrop-filter: blur(5px); /* Reduced blur for 3D view */
+}
+
+.screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+}
+
+.screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+/* HUD elements shouldn't have background blur */
+#hud {
+    background: transparent;
+    backdrop-filter: none;
+    pointer-events: none;
+    justify-content: flex-start;
+}
+
+/* Titles */
+.title-container {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+h1 {
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.neon-text {
+    color: #00f3ff;
+    text-shadow: 0 0 5px #00f3ff, 0 0 15px #00f3ff, 0 0 30px #00f3ff;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #aaa;
+    letter-spacing: 2px;
+    margin-top: -10px;
+}
+
+h2 {
+    font-size: 2.5rem;
+    color: #ff0055;
+    text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055;
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+}
+
+/* Buttons */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 80%;
+    max-width: 300px;
+}
+
+.action-btn {
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.action-btn:active {
+    transform: translateY(1px);
+}
+
+.glow-btn {
+    border-color: #00f3ff;
+    background: rgba(0, 243, 255, 0.1);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.3) inset;
+}
+
+.glow-btn:hover {
+    background: rgba(0, 243, 255, 0.2);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.5) inset, 0 0 20px rgba(0, 243, 255, 0.5);
+    text-shadow: 0 0 5px #fff;
+}
+
+.secondary {
+    border-color: #555;
+    color: #aaa;
+}
+
+.secondary:hover {
+    color: #fff;
+    border-color: #888;
+}
+
+/* Garage */
+.car-showcase {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 20px;
+    margin-bottom: 30px;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+.nav-btn:hover {
+    transform: scale(1.2);
+    color: #00f3ff;
+}
+
+.car-info {
+    width: 80%;
+    background: rgba(0,0,0,0.5);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 30px;
+}
+
+#car-name {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.stat-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.stat-bar span {
+    width: 80px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.bar-bg {
+    flex-grow: 1;
+    height: 10px;
+    background: #222;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0055, #ffcc00);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.garage-actions {
+    display: flex;
+    gap: 15px;
+    width: 80%;
+}
+
+.garage-actions .action-btn {
+    flex: 1;
+    font-size: 1.2rem;
+    padding: 12px 15px;
+}
+
+/* HUD */
+.hud-top {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: auto; /* allow clicks if we want a pause button later */
+}
+
+.score-display, .speed-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.key-hints {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    font-size: 0.8rem;
+    color: #ccc;
+    pointer-events: none;
+    letter-spacing: 1px;
+}
+
+.key-hints b {
+    color: #00f3ff;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 2px;
+}
+
+/* Game Over */
+.final-score {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.final-score p {
+    color: #aaa;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+}
+
+#final-score-val {
+    font-size: 4rem;
+    color: #ffcc00;
+    text-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+    margin: 0;
+}
+
+/* Mobile responsive adjustments */
+@media (max-height: 600px) {
+    h1 { font-size: 3rem; }
+    h2 { font-size: 2rem; }
+    .car-display-container { height: 200px; }
+    .title-container { margin-bottom: 20px; }
+}

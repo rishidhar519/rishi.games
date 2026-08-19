@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>City Racer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- We'll attach the Three.js renderer's canvas to this container instead of hardcoding a canvas -->
+        
+        <!-- UI Overlays -->
+        <div id="ui-layer">
+            
+            <!-- Main Menu -->
+            <div id="main-menu" class="screen active">
+                <div class="title-container">
+                    <h1>CITY <span class="neon-text">RACER 3D</span></h1>
+                    <p class="subtitle">Next-Gen Traffic Driving</p>
+                </div>
+                <div class="menu-buttons">
+                    <button id="btn-play" class="action-btn glow-btn">PLAY</button>
+                    <button id="btn-garage" class="action-btn">GARAGE</button>
+                </div>
+            </div>
+
+            <!-- Garage / Car Selection -->
+            <div id="garage-menu" class="screen hidden">
+                <h2>GARAGE</h2>
+                <div class="car-showcase">
+                    <button id="btn-prev-car" class="nav-btn">◄</button>
+                    <!-- Garage 3D view will be rendered by the main Three.js scene -->
+                    <div class="car-display-spacer" style="width: 200px; height: 300px;"></div>
+                    <button id="btn-next-car" class="nav-btn">►</button>
+                </div>
+                <div class="car-info">
+                    <h3 id="car-name">Red Flare</h3>
+                    <div class="stat-bar">
+                        <span>Speed</span>
+                        <div class="bar-bg"><div id="stat-speed" class="bar-fill" style="width: 60%"></div></div>
+                    </div>
+                    <div class="stat-bar">
+                        <span>Handling</span>
+                        <div class="bar-bg"><div id="stat-handling" class="bar-fill" style="width: 80%"></div></div>
+                    </div>
+                </div>
+                <div class="garage-actions">
+                    <button id="btn-select-car" class="action-btn glow-btn">SELECT</button>
+                    <button id="btn-back-main" class="action-btn secondary">BACK</button>
+                </div>
+            </div>
+
+            <!-- In-Game HUD -->
+            <div id="hud" class="screen hidden">
+                <div class="hud-top">
+                    <div class="score-display">SCORE: <span id="score">0</span></div>
+                    <div class="speed-display"><span id="speed">0</span> MPH</div>
+                </div>
+                <div class="key-hints">
+                    <span><b>W</b> Gas</span>
+                    <span><b>S</b> Brake</span>
+                    <span><b>A</b> / <b>D</b> Steer</span>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="game-over" class="screen hidden">
+                <h2>CRASHED!</h2>
+                <div class="final-score">
+                    <p>SCORE</p>
+                    <h3 id="final-score-val">0</h3>
+                </div>
+                <div class="menu-buttons">
+                    <button id="btn-restart" class="action-btn glow-btn">RETRY</button>
+                    <button id="btn-menu-from-over" class="action-btn secondary">MENU</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="cars.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
