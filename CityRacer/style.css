@@ -62,18 +62,23 @@ body, html {
     transition: opacity 0.3s ease, transform 0.3s ease;
     background: rgba(5, 5, 10, 0.85); /* Semi-transparent so we can see 3D scene */
     backdrop-filter: blur(5px); /* Reduced blur for 3D view */
+    z-index: 10;
 }
 
 .screen.hidden {
-    opacity: 0;
-    pointer-events: none;
+    display: none !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
     transform: scale(0.95);
+    z-index: -1 !important;
 }
 
 .screen.active {
-    opacity: 1;
-    pointer-events: auto;
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
     transform: scale(1);
+    z-index: 50 !important;
 }
 
 /* HUD elements shouldn't have background blur */

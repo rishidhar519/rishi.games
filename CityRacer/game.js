@@ -678,18 +678,31 @@ window.addEventListener('touchend', (e) => {
     }
 }, { passive: true });
 
-// Navigation Buttons
-document.getElementById('btn-play').addEventListener('click', startGame);
-document.getElementById('btn-garage').addEventListener('click', openGarage);
-document.getElementById('btn-back-main').addEventListener('click', () => switchState('MENU'));
-document.getElementById('btn-select-car').addEventListener('click', () => switchState('MENU'));
-document.getElementById('btn-restart').addEventListener('click', startGame);
-document.getElementById('btn-menu-from-over').addEventListener('click', () => switchState('MENU'));
-document.getElementById('btn-prev-car').addEventListener('click', () => {
+// Robust Tap & Click Listener Helper for Navigation Buttons
+function addTapListener(id, callback) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+        e.preventDefault();
+        callback(e);
+    });
+    el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        callback(e);
+    });
+}
+
+addTapListener('btn-play', startGame);
+addTapListener('btn-garage', openGarage);
+addTapListener('btn-back-main', () => switchState('MENU'));
+addTapListener('btn-select-car', () => switchState('MENU'));
+addTapListener('btn-restart', startGame);
+addTapListener('btn-menu-from-over', () => switchState('MENU'));
+addTapListener('btn-prev-car', () => {
     currentCarIndex = (currentCarIndex - 1 + CARS.length) % CARS.length;
     updateGarageDisplay();
 });
-document.getElementById('btn-next-car').addEventListener('click', () => {
+addTapListener('btn-next-car', () => {
     currentCarIndex = (currentCarIndex + 1) % CARS.length;
     updateGarageDisplay();
 });
