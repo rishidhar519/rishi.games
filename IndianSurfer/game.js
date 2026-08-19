@@ -281,7 +281,7 @@ function initMaterials() {
     });
     barricadeMaterial = new THREE.MeshStandardMaterial({ map: createStripeTexture(), roughness: 0.6 });
     trainMaterial = new THREE.MeshStandardMaterial({ map: createMetalTexture(), metalness: 0.7, roughness: 0.4 });
-    coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1.0, roughness: 0.1 });
+    coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0x443300, metalness: 0.8, roughness: 0.2 });
     railMaterial = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.9, roughness: 0.2 });
 
     starMat = new THREE.MeshStandardMaterial({ map: createStarTexture(), roughness: 0.5 });
