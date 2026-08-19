@@ -1,25 +1,30 @@
-* {
+html, body {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-}
-
-body {
+    width: 100%;
+    height: 100%;
     overflow: hidden; /* Prevent scrolling */
     font-family: 'Outfit', sans-serif;
     background-color: #000;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 #game-container {
     position: relative;
     width: 100vw;
     height: 100vh;
+    touch-action: none;
+    overflow: hidden;
 }
 
 canvas {
     display: block;
     width: 100%;
     height: 100%;
+    touch-action: none;
 }
 
 #ui-layer {
@@ -300,19 +305,69 @@ button:active {
     to { transform: translateX(0); opacity: 1; }
 }
 
+/* --- On-Screen Mobile Controls --- */
+#mobile-controls {
+    position: absolute;
+    bottom: 25px;
+    left: 0;
+    width: 100%;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 25;
+}
+
+.mobile-btn-group {
+    display: flex;
+    gap: 15px;
+    pointer-events: auto;
+}
+
+.touch-btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+    font-size: 1.6rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: transform 0.08s, background 0.08s, border-color 0.08s;
+}
+
+.touch-btn:active {
+    transform: scale(0.88);
+    background: rgba(255, 153, 51, 0.85);
+    border-color: #ff9933;
+    box-shadow: 0 0 20px rgba(255, 153, 51, 0.8);
+}
+
 /* --- Mobile Responsive Rules --- */
 @media (max-width: 768px) {
-    h1 { font-size: 3rem; margin-bottom: 10px; }
-    h2 { font-size: 2.5rem; }
-    p { font-size: 1rem; }
-    .btn { padding: 10px 20px; font-size: 1.2rem; }
-    .stats-container { top: 10px; left: 10px; gap: 10px; }
-    .stat-box { padding: 5px 10px; }
-    .stat-label { font-size: 0.6rem; }
-    .stat-value { font-size: 1.2rem; }
+    h1 { font-size: 2.8rem; margin-bottom: 10px; }
+    h2 { font-size: 2.2rem; }
+    p { font-size: 0.95rem; }
+    .btn { padding: 10px 20px; font-size: 1.1rem; }
+    .stats-container { top: 10px; left: 10px; gap: 8px; }
+    .stat-box { padding: 5px 8px; }
+    .stat-label { font-size: 0.55rem; }
+    .stat-value { font-size: 1.1rem; }
     .shop-items { width: 95%; gap: 10px; margin-top: 15px; }
     .shop-item { padding: 10px 15px; }
     .shop-item h3 { font-size: 1rem; }
     #active-powerups { top: 70px; left: 10px; }
     .powerup-indicator { min-width: 120px; padding: 5px 10px; font-size: 0.8rem; }
+    #mobile-controls { bottom: 15px; padding: 0 15px; }
+    .touch-btn { width: 54px; height: 54px; font-size: 1.3rem; }
 }

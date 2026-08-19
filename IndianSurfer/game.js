@@ -380,9 +380,31 @@ function init() {
         window.addEventListener('resize', onWindowResize);
         document.addEventListener('keydown', onKeyDown);
         
-        // Touch Controls
-        document.addEventListener('touchstart', handleTouchStart, {passive: false});
-        document.addEventListener('touchmove', handleTouchMove, {passive: false});
+        // Universal Touch & Pointer Controls
+        const touchOptions = { passive: false };
+        window.addEventListener('touchstart', handleTouchStart, touchOptions);
+        window.addEventListener('touchmove', handleTouchMove, touchOptions);
+        window.addEventListener('touchend', handleTouchEnd, touchOptions);
+        window.addEventListener('touchcancel', handleTouchEnd, touchOptions);
+
+        // Bind on-screen virtual buttons for mobile
+        const bindButton = (id, action) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const trigger = (e) => {
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+                action();
+            };
+            el.addEventListener('pointerdown', trigger);
+            el.addEventListener('touchstart', trigger, { passive: false });
+            el.addEventListener('click', trigger);
+        };
+
+        bindButton('btn-left', moveLeft);
+        bindButton('btn-right', moveRight);
+        bindButton('btn-jump', jump);
+        bindButton('btn-roll', roll);
         
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', resetGame);
@@ -689,110 +711,131 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+// --- Unified Movement Functions ---
+function moveLeft() {
+    if (!isPlaying) return;
+    if (currentLane < 1) {
+        currentLane++;
+        if (player) {
+            player.rotation.z = 0.3;
+            setTimeout(() => { if (player) player.rotation.z = 0; }, 200);
+        }
+    }
+}
+
+function moveRight() {
+    if (!isPlaying) return;
+    if (currentLane > -1) {
+        currentLane--;
+        if (player) {
+            player.rotation.z = -0.3;
+            setTimeout(() => { if (player) player.rotation.z = 0; }, 200);
+        }
+    }
+}
+
+function jump() {
+    if (!isPlaying) return;
+    if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
+        isJumping = true;
+        yVelocity = JUMP_FORCE;
+    }
+}
+
+function roll() {
+    if (!isPlaying) return;
+    if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
+        isRolling = true;
+        rollTimer = 0.8;
+        if (player) {
+            player.rotation.x = Math.PI / 2 + 0.3; 
+            player.position.y -= 0.5;
+        }
+    } else if (isJumping) {
+        yVelocity = -JUMP_FORCE * 2.0; 
+    }
+}
+
 function onKeyDown(event) {
     if (!isPlaying) return;
 
     switch (event.code) {
         case 'ArrowLeft':
         case 'KeyA':
-            if (currentLane < 1) {
-                currentLane++;
-                player.rotation.z = 0.3;
-                setTimeout(() => player.rotation.z = 0, 200);
-            }
+            moveLeft();
             break;
         case 'ArrowRight':
         case 'KeyD':
-            if (currentLane > -1) {
-                currentLane--;
-                player.rotation.z = -0.3;
-                setTimeout(() => player.rotation.z = 0, 200);
-            }
+            moveRight();
             break;
         case 'ArrowUp':
         case 'KeyW':
         case 'Space':
-            // Jetpack disables jumping
-            if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
-                isJumping = true;
-                yVelocity = JUMP_FORCE;
-            }
+            jump();
             break;
         case 'ArrowDown':
         case 'KeyS':
-            if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
-                isRolling = true;
-                rollTimer = 0.8;
-                player.rotation.x = Math.PI / 2 + 0.3; 
-                player.position.y -= 0.5;
-            } else if (isJumping) {
-                yVelocity = -JUMP_FORCE * 2.0; 
-            }
+            roll();
             break;
     }
 }
 
-// --- Touch Swipe Logic ---
-let xDown = null;
-let yDown = null;
+// --- Bulletproof Touch / Swipe Logic ---
+let touchStartX = 0;
+let touchStartY = 0;
+let isSwiping = false;
 
 function handleTouchStart(evt) {
-    if(evt.target.tagName === 'BUTTON') return;
-    const firstTouch = evt.touches[0];
-    xDown = firstTouch.clientX;
-    yDown = firstTouch.clientY;
+    if (!isPlaying) return;
+    if (evt.target.closest('button') || evt.target.closest('.screen.active')) return;
+
+    const t = evt.touches ? evt.touches[0] : evt;
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    isSwiping = true;
+
+    if (evt.cancelable) evt.preventDefault();
 }
 
 function handleTouchMove(evt) {
-    if (!xDown || !yDown || !isPlaying) return;
+    if (!isPlaying || !isSwiping) return;
+    if (evt.target.closest('button') || evt.target.closest('.screen.active')) return;
 
-    let xUp = evt.touches[0].clientX;
-    let yUp = evt.touches[0].clientY;
+    if (evt.cancelable) evt.preventDefault();
 
-    let xDiff = xDown - xUp;
-    let yDiff = yDown - yUp;
+    const t = evt.touches ? evt.touches[0] : evt;
+    const diffX = t.clientX - touchStartX;
+    const diffY = t.clientY - touchStartY;
+    const threshold = 25; // 25px threshold
 
-    // Minimum swipe threshold
-    if(Math.abs(xDiff) < 30 && Math.abs(yDiff) < 30) return;
-
-    if (Math.abs(xDiff) > Math.abs(yDiff)) {
-        if (xDiff > 0) {
-            // left swipe
-            if (currentLane < 1) {
-                currentLane++;
-                player.rotation.z = 0.3;
-                setTimeout(() => player.rotation.z = 0, 200);
+    if (Math.abs(diffX) > threshold || Math.abs(diffY) > threshold) {
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            // Horizontal swipe
+            if (diffX > 0) {
+                // Swiped right on screen -> Move Right
+                moveRight();
+            } else {
+                // Swiped left on screen -> Move Left
+                moveLeft();
             }
         } else {
-            // right swipe
-            if (currentLane > -1) {
-                currentLane--;
-                player.rotation.z = -0.3;
-                setTimeout(() => player.rotation.z = 0, 200);
+            // Vertical swipe
+            if (diffY < 0) {
+                // Swiped up on screen -> Jump
+                jump();
+            } else {
+                // Swiped down on screen -> Roll
+                roll();
             }
         }
-    } else {
-        if (yDiff > 0) {
-            // up swipe
-            if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
-                isJumping = true;
-                yVelocity = JUMP_FORCE;
-            }
-        } else {
-            // down swipe
-            if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
-                isRolling = true;
-                rollTimer = 0.8;
-                player.rotation.x = Math.PI / 2 + 0.3; 
-                player.position.y -= 0.5;
-            } else if (isJumping) {
-                yVelocity = -JUMP_FORCE * 2.0; 
-            }
-        }
+        // Update anchor point for fluid chaining
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
     }
-    // Reset values
-    xDown = null;
-    yDown = null;
+}
+
+function handleTouchEnd(evt) {
+    isSwiping = false;
 }
 
 function startGame() {

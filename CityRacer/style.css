@@ -299,6 +299,119 @@ h2 {
     margin-right: 2px;
 }
 
+/* Mobile Touch Controls Layer */
+#mobile-touch-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    z-index: 100;
+}
+
+/* Left and Right Direct Touch Steering Zones */
+.touch-steer-zone {
+    flex: 1;
+    height: 75%;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0.25;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.touch-steer-zone:active, .touch-steer-zone.touch-active {
+    opacity: 0.7;
+    background: rgba(0, 243, 255, 0.08);
+}
+
+.steer-indicator {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 2px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+}
+
+/* Bottom Pedals (Brake & Nitro) */
+.touch-pedals {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    pointer-events: none;
+    z-index: 110;
+}
+
+.pedal-btn {
+    pointer-events: auto;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(10, 15, 25, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    user-select: none;
+}
+
+.pedal-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.pedal-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+/* Brake Pedal (Red) */
+.brake-pedal {
+    border-color: #ff1744;
+    color: #ff1744;
+    box-shadow: 0 0 15px rgba(255, 23, 68, 0.3);
+}
+
+.brake-pedal:active, .brake-pedal.pedal-active {
+    transform: scale(0.92);
+    background: rgba(255, 23, 68, 0.35);
+    box-shadow: 0 0 25px rgba(255, 23, 68, 0.7);
+}
+
+/* Nitro / Gas Pedal (Cyan Glow) */
+.nitro-pedal {
+    border-color: #00f3ff;
+    color: #00f3ff;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+}
+
+.nitro-pedal:active, .nitro-pedal.pedal-active {
+    transform: scale(0.92);
+    background: rgba(0, 243, 255, 0.35);
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.8);
+}
+
 /* Game Over */
 .final-score {
     text-align: center;
@@ -318,10 +431,27 @@ h2 {
     margin: 0;
 }
 
-/* Mobile responsive adjustments */
-@media (max-height: 600px) {
-    h1 { font-size: 3rem; }
+/* --- Mobile Responsive Rules --- */
+@media (max-width: 768px) {
+    h1 { font-size: 2.8rem; letter-spacing: 3px; }
     h2 { font-size: 2rem; }
-    .car-display-container { height: 200px; }
-    .title-container { margin-bottom: 20px; }
+    .subtitle { font-size: 0.95rem; }
+    .action-btn { padding: 14px 24px; font-size: 1.25rem; }
+    .score-display, .speed-display { font-size: 1.2rem; }
+    .key-hints { top: auto; bottom: 110px; right: 50%; transform: translateX(50%); font-size: 0.75rem; padding: 4px 10px; }
+    .pedal-btn { width: 72px; height: 72px; }
+    .car-info { width: 90%; padding: 15px; }
+    .garage-actions { width: 90%; }
+}
+
+@media (max-height: 600px) {
+    h1 { font-size: 2.2rem; }
+    h2 { font-size: 1.6rem; margin-bottom: 15px; }
+    .title-container { margin-bottom: 15px; }
+    .pedal-btn { width: 62px; height: 62px; }
+    .pedal-icon { font-size: 1.3rem; }
+    .touch-pedals { bottom: 10px; }
+    .hud-top { top: 10px; }
+    .car-showcase { margin-bottom: 10px; }
+    .car-display-spacer { height: 160px !important; }
 }

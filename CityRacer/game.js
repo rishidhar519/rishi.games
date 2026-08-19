@@ -527,11 +527,15 @@ let garageCarModel = null;
 
 const input = { left: false, right: false, accel: false, brake: false };
 
-// --- EVENT LISTENERS ---
-window.addEventListener('resize', () => {
+// --- RESPONSIVE RESIZE & ORIENTATION ---
+function handleResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', () => {
+    setTimeout(handleResize, 100);
 });
 
 // Smooth Keyboard Controls: W (forward), S (brake), A (left), D (right) & Arrows
@@ -550,6 +554,129 @@ window.addEventListener('keyup', (e) => {
     if (key === 'arrowup' || key === 'w') input.accel = false;
     if (key === 'arrowdown' || key === 's') input.brake = false;
 });
+
+// --- MOBILE ON-SCREEN TOUCH & MULTI-TOUCH ENGINE ---
+const touchSteerLeft = document.getElementById('touch-steer-left');
+const touchSteerRight = document.getElementById('touch-steer-right');
+const btnTouchNitro = document.getElementById('btn-touch-nitro');
+const btnTouchBrake = document.getElementById('btn-touch-brake');
+
+function setupTouchButton(el, onDown, onUp) {
+    if (!el) return;
+    
+    el.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        onDown();
+        el.classList.add('touch-active', 'pedal-active');
+    }, { passive: false });
+
+    el.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        onUp();
+        el.classList.remove('touch-active', 'pedal-active');
+    }, { passive: false });
+
+    el.addEventListener('touchcancel', (e) => {
+        onUp();
+        el.classList.remove('touch-active', 'pedal-active');
+    });
+
+    // Also support mouse clicks for testing on desktop
+    el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        onDown();
+        el.classList.add('pedal-active');
+    });
+    el.addEventListener('mouseup', () => {
+        onUp();
+        el.classList.remove('pedal-active');
+    });
+}
+
+setupTouchButton(touchSteerLeft, () => { input.left = true; }, () => { input.left = false; });
+setupTouchButton(touchSteerRight, () => { input.right = true; }, () => { input.right = false; });
+setupTouchButton(btnTouchNitro, () => { input.accel = true; }, () => { input.accel = false; });
+setupTouchButton(btnTouchBrake, () => { input.brake = true; }, () => { input.brake = false; });
+
+// Direct Screen Drag & Touch Steering Anywhere on Screen
+let garageTouchStartX = 0;
+
+window.addEventListener('touchstart', (e) => {
+    if (state === 'GARAGE' && e.touches.length > 0) {
+        garageTouchStartX = e.touches[0].clientX;
+        return;
+    }
+
+    if (state === 'PLAYING') {
+        for (let i = 0; i < e.touches.length; i++) {
+            const t = e.touches[i];
+            if (t.clientY < window.innerHeight * 0.75) {
+                if (t.clientX < window.innerWidth * 0.5) {
+                    input.left = true;
+                    input.right = false;
+                } else {
+                    input.right = true;
+                    input.left = false;
+                }
+            }
+        }
+    }
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+    if (state !== 'PLAYING') return;
+    for (let i = 0; i < e.touches.length; i++) {
+        const t = e.touches[i];
+        if (t.clientY < window.innerHeight * 0.75) {
+            if (t.clientX < window.innerWidth * 0.5) {
+                input.left = true;
+                input.right = false;
+            } else {
+                input.right = true;
+                input.left = false;
+            }
+        }
+    }
+}, { passive: true });
+
+window.addEventListener('touchend', (e) => {
+    if (state === 'GARAGE' && e.changedTouches.length > 0) {
+        const diffX = e.changedTouches[0].clientX - garageTouchStartX;
+        if (diffX > 45) {
+            currentCarIndex = (currentCarIndex - 1 + CARS.length) % CARS.length;
+            updateGarageDisplay();
+        } else if (diffX < -45) {
+            currentCarIndex = (currentCarIndex + 1) % CARS.length;
+            updateGarageDisplay();
+        }
+    }
+
+    if (state === 'PLAYING') {
+        if (e.touches.length === 0) {
+            input.left = false;
+            input.right = false;
+        } else {
+            let hasSteerTouch = false;
+            for (let i = 0; i < e.touches.length; i++) {
+                const t = e.touches[i];
+                if (t.clientY < window.innerHeight * 0.75) {
+                    hasSteerTouch = true;
+                    if (t.clientX < window.innerWidth * 0.5) {
+                        input.left = true;
+                        input.right = false;
+                    } else {
+                        input.right = true;
+                        input.left = false;
+                    }
+                }
+            }
+            if (!hasSteerTouch) {
+                input.left = false;
+                input.right = false;
+            }
+        }
+    }
+}, { passive: true });
 
 // Navigation Buttons
 document.getElementById('btn-play').addEventListener('click', startGame);

@@ -60,9 +60,32 @@
                     <div class="speed-display"><span id="speed">0</span> MPH</div>
                 </div>
                 <div class="key-hints">
-                    <span><b>W</b> Gas</span>
-                    <span><b>S</b> Brake</span>
+                    <span><b>W</b> / <b>⚡</b> Nitro</span>
+                    <span><b>S</b> / <b>🛑</b> Brake</span>
                     <span><b>A</b> / <b>D</b> Steer</span>
+                </div>
+
+                <!-- On-Screen Mobile Touch Controls -->
+                <div id="mobile-touch-layer">
+                    <!-- Left / Right Touch Steering Zones -->
+                    <div id="touch-steer-left" class="touch-steer-zone">
+                        <div class="steer-indicator">◀ STEER</div>
+                    </div>
+                    <div id="touch-steer-right" class="touch-steer-zone">
+                        <div class="steer-indicator">STEER ▶</div>
+                    </div>
+
+                    <!-- Bottom Touch Pedals (Brake & Nitro) -->
+                    <div class="touch-pedals">
+                        <button id="btn-touch-brake" class="pedal-btn brake-pedal" aria-label="Brake">
+                            <span class="pedal-icon">🛑</span>
+                            <span class="pedal-label">BRAKE</span>
+                        </button>
+                        <button id="btn-touch-nitro" class="pedal-btn nitro-pedal" aria-label="Nitro Boost">
+                            <span class="pedal-icon">⚡</span>
+                            <span class="pedal-label">NITRO</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
