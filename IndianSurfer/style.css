@@ -305,54 +305,6 @@ button:active {
     to { transform: translateX(0); opacity: 1; }
 }
 
-/* --- On-Screen Mobile Controls --- */
-#mobile-controls {
-    position: absolute;
-    bottom: 25px;
-    left: 0;
-    width: 100%;
-    padding: 0 25px;
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-    z-index: 25;
-}
-
-.mobile-btn-group {
-    display: flex;
-    gap: 15px;
-    pointer-events: auto;
-}
-
-.touch-btn {
-    width: 62px;
-    height: 62px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.55);
-    border: 2px solid rgba(255, 255, 255, 0.45);
-    color: #ffffff;
-    font-size: 1.6rem;
-    font-weight: 900;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    transition: transform 0.08s, background 0.08s, border-color 0.08s;
-}
-
-.touch-btn:active {
-    transform: scale(0.88);
-    background: rgba(255, 153, 51, 0.85);
-    border-color: #ff9933;
-    box-shadow: 0 0 20px rgba(255, 153, 51, 0.8);
-}
-
 /* --- Mobile Responsive Rules --- */
 @media (max-width: 768px) {
     h1 { font-size: 2.8rem; margin-bottom: 10px; }
@@ -368,6 +320,4 @@ button:active {
     .shop-item h3 { font-size: 1rem; }
     #active-powerups { top: 70px; left: 10px; }
     .powerup-indicator { min-width: 120px; padding: 5px 10px; font-size: 0.8rem; }
-    #mobile-controls { bottom: 15px; padding: 0 15px; }
-    .touch-btn { width: 54px; height: 54px; font-size: 1.3rem; }
 }
