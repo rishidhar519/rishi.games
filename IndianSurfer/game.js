@@ -134,6 +134,26 @@ function createStripeTexture() {
     return tex;
 }
 
+function createOrangeStripeTexture() {
+    const canvas = createCanvas(512);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f8fafc'; // Crisp reflective white
+    ctx.fillRect(0, 0, 512, 512);
+    ctx.fillStyle = '#ea580c'; // Construction safety orange
+    for(let i = -512; i < 1024; i += 72) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0); 
+        ctx.lineTo(i + 44, 0); 
+        ctx.lineTo(i - 512 + 44, 512); 
+        ctx.lineTo(i - 512, 512);
+        ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 1);
+    return tex;
+}
+
 function createVandeBharatTexture(theme = 'orange') {
     const canvas = createCanvas(512);
     const ctx = canvas.getContext('2d');
@@ -323,6 +343,11 @@ function initMaterials() {
         map: createLeafTexture(), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8
     });
     barricadeMaterial = new THREE.MeshStandardMaterial({ map: createStripeTexture(), roughness: 0.6 });
+    orangeStripeMaterial = new THREE.MeshStandardMaterial({ 
+        map: createOrangeStripeTexture(), 
+        roughness: 0.35, 
+        metalness: 0.1 
+    });
     
     // Modern High-Speed Bullet Train Materials (Vande Bharat Orange & Blue)
     vandeOrangeMat = new THREE.MeshStandardMaterial({ 
@@ -462,6 +487,67 @@ function createModernTrainMesh(theme = 'orange') {
     group.add(skirt);
 
     return group;
+}
+
+// --- Type III 3-Rail Highway Barricade (Orange & White) ---
+function createType3Barricade() {
+    const group = new THREE.Group();
+    const plankGeo = new THREE.BoxGeometry(4.2, 0.65, 0.08);
+    const postGeo = new THREE.BoxGeometry(0.12, 3.4, 0.12);
+    const footGeo = new THREE.BoxGeometry(0.12, 0.12, 1.6);
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.25 });
+
+    // 3 Horizontal Orange & White Striped Planks (Top, Middle, Bottom)
+    for (let y of [0.9, 1.9, 2.9]) {
+        const plank = new THREE.Mesh(plankGeo, orangeStripeMaterial);
+        plank.position.set(0, y, 0);
+        plank.castShadow = true;
+        plank.receiveShadow = true;
+        group.add(plank);
+    }
+
+    // 2 Vertical Perforated Steel Posts
+    for (let x of [-1.55, 1.55]) {
+        const post = new THREE.Mesh(postGeo, postMat);
+        post.position.set(x, 1.7, -0.08);
+        post.castShadow = true;
+        group.add(post);
+
+        // Steel base foot on the ground
+        const foot = new THREE.Mesh(footGeo, postMat);
+        foot.position.set(x, 0.06, 0);
+        foot.castShadow = true;
+        group.add(foot);
+
+        // Stand riser bracket
+        const bracketGeo = new THREE.BoxGeometry(0.18, 0.4, 0.18);
+        const bracket = new THREE.Mesh(bracketGeo, postMat);
+        bracket.position.set(x, 0.25, 0);
+        group.add(bracket);
+    }
+
+    return { group, height: 3.4, hitboxY: 1.7, hitboxH: 3.4 };
+}
+
+// --- Standard Single-Rail Low Hurdle Barricade ---
+function createStandardBarricade() {
+    const group = new THREE.Group();
+    const barGeo = new THREE.BoxGeometry(4, 1.2, 0.5);
+    const bar = new THREE.Mesh(barGeo, barricadeMaterial);
+    bar.position.set(0, 0.8, 0);
+    bar.castShadow = true;
+    group.add(bar);
+
+    const legGeo = new THREE.BoxGeometry(0.2, 1.4, 0.8);
+    const legMat = new THREE.MeshStandardMaterial({color: 0x333333});
+    const lLeg = new THREE.Mesh(legGeo, legMat);
+    lLeg.position.set(-1.8, 0.7, 0);
+    const rLeg = new THREE.Mesh(legGeo, legMat);
+    rLeg.position.set(1.8, 0.7, 0);
+    group.add(lLeg);
+    group.add(rLeg);
+
+    return { group, height: 1.4, hitboxY: 0.7, hitboxH: 1.4 };
 }
 
 function loadModels(callback) {
@@ -807,36 +893,23 @@ function spawnObstacles(zPos) {
         scene.add(hitMesh);
 
         obstacles.push({ mesh: hitMesh, visual: group, type: 'train' });
-    } else if (rand < 0.65) { // Barricade
+    } else if (rand < 0.65) { // Barricades (Type III 3-rail construction barriers & Standard hurdles)
         const lane = Math.floor(Math.random() * 3) - 1;
-        const group = new THREE.Group();
-        
-        const barGeo = new THREE.BoxGeometry(4, 1.2, 0.5);
-        const bar = new THREE.Mesh(barGeo, barricadeMaterial);
-        bar.position.set(0, 0.8, 0);
-        bar.castShadow = true;
-        group.add(bar);
-
-        const legGeo = new THREE.BoxGeometry(0.2, 1.4, 0.8);
-        const legMat = new THREE.MeshStandardMaterial({color: 0x333333});
-        const lLeg = new THREE.Mesh(legGeo, legMat);
-        lLeg.position.set(-1.8, 0.7, 0);
-        const rLeg = new THREE.Mesh(legGeo, legMat);
-        rLeg.position.set(1.8, 0.7, 0);
-        group.add(lLeg);
-        group.add(rLeg);
+        const isType3 = (Math.random() > 0.45); // Mix of new 3-rail orange/white barricades & standard hurdles
+        const barData = isType3 ? createType3Barricade() : createStandardBarricade();
+        const group = barData.group;
 
         group.position.set(lane * LANE_WIDTH, 0, zPos + 10);
         scene.add(group);
         
-        const hitGeo = new THREE.BoxGeometry(4, 1.4, 0.8);
+        const hitGeo = new THREE.BoxGeometry(4.2, barData.hitboxH, 0.8);
         const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible: false}));
-        hitMesh.position.set(lane * LANE_WIDTH, 0.7, zPos + 10);
+        hitMesh.position.set(lane * LANE_WIDTH, barData.hitboxY, zPos + 10);
         scene.add(hitMesh);
         
         obstacles.push({ mesh: hitMesh, visual: group, type: 'barricade' });
         
-        if (Math.random() > 0.4) spawnCoin(lane, 3.8, zPos + 10);
+        if (Math.random() > 0.35) spawnCoin(lane, barData.height + 0.6, zPos + 10);
     } else if (rand < 0.95) { // Coins
         const lane = Math.floor(Math.random() * 3) - 1;
         // If Jetpack is active, don't spawn coins on ground normally? Or just let them be.
