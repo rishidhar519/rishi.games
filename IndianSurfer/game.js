@@ -155,62 +155,139 @@ function createOrangeStripeTexture() {
 }
 
 function createVandeBharatTexture(theme = 'orange') {
-    const canvas = createCanvas(512);
+    const canvas = createCanvas(1024);
     const ctx = canvas.getContext('2d');
 
-    const primaryColor = (theme === 'orange') ? '#ff6008' : '#0052cc';
-    const accentColor = (theme === 'orange') ? '#ff8533' : '#3385ff';
-    const baseColor = '#eef2f6'; // Clean metallic white/silver
+    const isOrange = (theme === 'orange');
+    const primaryColor = isOrange ? '#ff5500' : '#0052cc';
+    const primaryDark = isOrange ? '#cc3d00' : '#003999';
+    const accentColor = isOrange ? '#ff8833' : '#3385ff';
+    const baseWhite = '#f4f6fa';
+    const darkSkirt = '#18202c';
 
-    // Base coach body
-    ctx.fillStyle = baseColor;
-    ctx.fillRect(0, 0, 512, 512);
+    // 1. Base Metallic White Coach Body
+    ctx.fillStyle = baseWhite;
+    ctx.fillRect(0, 0, 1024, 1024);
 
-    // Modern lower aerodynamic skirt / dark zone
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(0, 400, 512, 112);
-
-    // Signature livery band
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 180, 512, 220);
-
-    // Bright accent stripe
-    ctx.fillStyle = accentColor;
-    ctx.fillRect(0, 160, 512, 20);
-    ctx.fillRect(0, 390, 512, 10);
-
-    // Continuous tinted aerodynamic panoramic window strip
-    ctx.fillStyle = '#0b0f19';
-    ctx.fillRect(0, 210, 512, 120);
-
-    // Individual window pillars & glass reflections
-    for (let x = 20; x < 512; x += 64) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    // Subtle metallic brushed panel lines
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.06)';
+    ctx.lineWidth = 2;
+    for (let x = 0; x < 1024; x += 128) {
         ctx.beginPath();
-        ctx.moveTo(x + 5, 215);
-        ctx.lineTo(x + 25, 215);
-        ctx.lineTo(x + 10, 325);
-        ctx.lineTo(x, 325);
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, 1024);
+        ctx.stroke();
+    }
+
+    // 2. Lower Aerodynamic Skirt / Chassis (Dark Grey / Black)
+    ctx.fillStyle = darkSkirt;
+    ctx.fillRect(0, 780, 1024, 244);
+    ctx.fillStyle = '#0f1722';
+    ctx.fillRect(0, 880, 1024, 144);
+
+    // Hazard safety trim above skirt
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, 765, 1024, 15);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 755, 1024, 10);
+
+    // 3. Signature High-Speed Aerodynamic Livery Bands
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, 360, 1024, 380);
+
+    ctx.fillStyle = primaryDark;
+    ctx.fillRect(0, 710, 1024, 35);
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(0, 330, 1024, 30);
+
+    // 4. Continuous Panoramic Dark Tinted Glass Window Ribbon
+    ctx.fillStyle = '#080c14';
+    ctx.fillRect(0, 420, 1024, 250);
+
+    // Window Frames, Glass Reflection Streaks & Interior Passenger Glow
+    for (let x = 30; x < 1024; x += 130) {
+        // Soft interior passenger cabin light glow
+        ctx.fillStyle = 'rgba(255, 235, 180, 0.25)';
+        ctx.fillRect(x + 10, 440, 95, 210);
+
+        // Passenger silhouettes
+        ctx.fillStyle = 'rgba(10, 15, 25, 0.55)';
+        ctx.beginPath();
+        ctx.arc(x + 40, 530, 20, 0, Math.PI * 2);
+        ctx.arc(x + 80, 530, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(x + 25, 550, 30, 60);
+        ctx.fillRect(x + 65, 550, 30, 60);
+
+        // Glass reflection sheen
+        const grad = ctx.createLinearGradient(x, 420, x + 110, 670);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
+        grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.08)');
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, 420, 115, 250);
+
+        // Window mullion pillars
+        ctx.fillStyle = '#18202c';
+        ctx.fillRect(x + 115, 420, 15, 250);
+    }
+
+    // 5. Realistic Automatic Sliding Passenger Coach Doors
+    for (let d of [40, 890]) {
+        // Door frame
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(d, 350, 90, 420);
+
+        // Door panel
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(d + 6, 360, 78, 400);
+
+        // Door window
+        ctx.fillStyle = '#080c14';
+        ctx.fillRect(d + 18, 420, 54, 160);
+
+        // Door window reflection
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(d + 20, 420);
+        ctx.lineTo(d + 45, 420);
+        ctx.lineTo(d + 25, 580);
+        ctx.lineTo(d + 20, 580);
         ctx.fill();
 
-        // Window division pillars
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(x + 48, 210, 8, 120);
+        // Safety edge indicator stripe
+        ctx.fillStyle = isOrange ? '#ff5500' : '#e11d48';
+        ctx.fillRect(d + 42, 360, 6, 400);
+
+        // Illuminated Door Open Touch Button
+        ctx.fillStyle = '#22c55e';
+        ctx.beginPath();
+        ctx.arc(d + 26, 620, 6, 0, Math.PI * 2);
+        ctx.fill();
     }
 
-    // Modern Passenger Coach Doors with indicator lines
-    for (let d of [15, 460]) {
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(d, 180, 35, 220);
-        ctx.fillStyle = (theme === 'orange') ? '#ffffff' : '#ff3344';
-        ctx.fillRect(d + 4, 210, 27, 80);
-    }
+    // 6. Stylized Train Branding & Lettering
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Arial, sans-serif';
+    ctx.fillText(isOrange ? 'VANDE BHARAT' : 'SUPERFAST EXPRESS', 240, 395);
 
-    // Top roof aerodynamic border
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.fillText('EXECUTIVE CHAIR CAR • C-1', 242, 700);
+
+    // 7. Roof Aerodynamic Fairing & Speed Ribs
     ctx.fillStyle = '#64748b';
-    ctx.fillRect(0, 0, 512, 50);
+    ctx.fillRect(0, 0, 1024, 120);
     ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 50, 512, 12);
+    ctx.fillRect(0, 120, 1024, 25);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 145, 1024, 12);
+
+    // Roof ventilation grooves
+    ctx.fillStyle = '#334155';
+    for (let y = 15; y < 105; y += 14) {
+        ctx.fillRect(0, y, 1024, 5);
+    }
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -386,105 +463,207 @@ function createModernTrainMesh(theme = 'orange') {
     const group = new THREE.Group();
     const isOrange = (theme === 'orange');
     const bodyMat = isOrange ? vandeOrangeMat : vandeBlueMat;
-    const primaryHex = isOrange ? 0xff6008 : 0x0052cc;
+    const primaryHex = isOrange ? 0xff5500 : 0x0052cc;
+
+    // Materials
+    const darkChassisMat = new THREE.MeshStandardMaterial({ color: 0x18202c, roughness: 0.6, metalness: 0.5 });
+    const silverMetalMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.2, metalness: 0.85 });
+    const primaryNoseMat = new THREE.MeshStandardMaterial({ color: primaryHex, roughness: 0.2, metalness: 0.4 });
+    const darkGlassMat = new THREE.MeshStandardMaterial({ color: 0x060910, roughness: 0.05, metalness: 0.95 });
+    const steelWheelMat = new THREE.MeshStandardMaterial({ color: 0x222a35, roughness: 0.2, metalness: 0.9 });
+    const chromeEmblemMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.05 });
 
     // 1. Main Aerodynamic Coach Body
-    const bodyGeo = new THREE.BoxGeometry(3.6, 4.2, 15);
+    const bodyGeo = new THREE.BoxGeometry(3.6, 4.2, 16);
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.set(0, 2.6, 0);
     body.castShadow = true;
     body.receiveShadow = true;
     group.add(body);
 
-    // 2. Streamlined Slanted Bullet Nose (Facing incoming towards -Z)
-    const noseGeo = new THREE.BoxGeometry(3.5, 3.8, 3.6);
-    const noseMat = new THREE.MeshStandardMaterial({
-        color: primaryHex,
-        roughness: 0.2,
-        metalness: 0.3
-    });
-    const nose = new THREE.Mesh(noseGeo, noseMat);
-    nose.position.set(0, 2.2, -8.2);
-    nose.rotation.x = -Math.PI / 8; 
-    nose.castShadow = true;
-    group.add(nose);
+    // 2. Sculpted Multi-Tier Aerodynamic Bullet Nose (Front Cabin facing -Z)
+    const hoodGeo = new THREE.BoxGeometry(3.56, 3.2, 3.8);
+    const hood = new THREE.Mesh(hoodGeo, primaryNoseMat);
+    hood.position.set(0, 2.35, -8.6);
+    hood.rotation.x = -Math.PI / 7.5; 
+    hood.castShadow = true;
+    group.add(hood);
 
-    // Aerodynamic Lower Bumper / Cowcatcher
-    const bumperGeo = new THREE.BoxGeometry(3.55, 1.2, 2.0);
-    const bumperMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
-    const bumper = new THREE.Mesh(bumperGeo, bumperMat);
-    bumper.position.set(0, 0.9, -8.8);
-    bumper.castShadow = true;
-    group.add(bumper);
+    // Low Aerodynamic Nose Wedge & Cowcatcher Splitter
+    const wedgeGeo = new THREE.BoxGeometry(3.58, 1.4, 2.8);
+    const wedge = new THREE.Mesh(wedgeGeo, darkChassisMat);
+    wedge.position.set(0, 0.95, -9.4);
+    wedge.castShadow = true;
+    group.add(wedge);
 
-    // Front Windshield Glass (Curved aerodynamic black panoramic glass)
-    const glassGeo = new THREE.BoxGeometry(3.0, 1.4, 0.2);
-    const glassMat = new THREE.MeshStandardMaterial({
-        color: 0x05070b,
-        roughness: 0.05,
-        metalness: 0.9
-    });
-    const glass = new THREE.Mesh(glassGeo, glassMat);
-    glass.position.set(0, 3.1, -9.2);
-    glass.rotation.x = -Math.PI / 7;
+    // Lower Air-dam Lip (Safety Highlight)
+    const lipGeo = new THREE.BoxGeometry(3.52, 0.35, 1.2);
+    const lip = new THREE.Mesh(lipGeo, primaryNoseMat);
+    lip.position.set(0, 0.35, -10.4);
+    group.add(lip);
+
+    // Front Knuckle Coupler (Schaku Coupler)
+    const couplerGeo = new THREE.BoxGeometry(0.5, 0.4, 0.9);
+    const coupler = new THREE.Mesh(couplerGeo, silverMetalMat);
+    coupler.position.set(0, 0.65, -10.8);
+    group.add(coupler);
+
+    // 3. Panoramic Wraparound Windshield Glass
+    const glassGeo = new THREE.BoxGeometry(3.1, 1.45, 0.2);
+    const glass = new THREE.Mesh(glassGeo, darkGlassMat);
+    glass.position.set(0, 3.2, -9.7);
+    glass.rotation.x = -Math.PI / 6.8;
     group.add(glass);
 
-    // 3. Glowing LED Headlights (Dual lower + Top center high-beam)
-    const headlightGeo = new THREE.BoxGeometry(0.5, 0.25, 0.1);
-    const leftLight = new THREE.Mesh(headlightGeo, headlightGlowMat);
-    leftLight.position.set(-1.1, 1.8, -9.6);
+    // Silver Windshield Frame Trim
+    const frameGeo = new THREE.BoxGeometry(3.18, 0.08, 0.22);
+    const frameTop = new THREE.Mesh(frameGeo, silverMetalMat);
+    frameTop.position.set(0, 3.85, -9.5);
+    frameTop.rotation.x = -Math.PI / 6.8;
+    group.add(frameTop);
+
+    // Dual Wiper Blades
+    const wiperGeo = new THREE.BoxGeometry(0.04, 0.8, 0.04);
+    for (let wx of [-0.6, 0.6]) {
+        const wiper = new THREE.Mesh(wiperGeo, darkChassisMat);
+        wiper.position.set(wx, 3.1, -9.8);
+        wiper.rotation.z = Math.PI / 10 * (wx < 0 ? -1 : 1);
+        wiper.rotation.x = -Math.PI / 6.8;
+        group.add(wiper);
+    }
+
+    // Front Chrome Emblem Badge
+    const badgeGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.08, 24);
+    const badge = new THREE.Mesh(badgeGeo, chromeEmblemMat);
+    badge.rotation.x = Math.PI / 2 - Math.PI / 7.5;
+    badge.position.set(0, 2.05, -10.2);
+    group.add(badge);
+
+    // 4. Projector Headlights (Aggressive Angular LED Headlights + Center High Beam)
+    const headlampGeo = new THREE.BoxGeometry(0.65, 0.28, 0.15);
+    const leftLight = new THREE.Mesh(headlampGeo, headlightGlowMat);
+    leftLight.position.set(-1.15, 1.65, -10.15);
+    leftLight.rotation.y = Math.PI / 16;
     group.add(leftLight);
 
-    const rightLight = new THREE.Mesh(headlightGeo, headlightGlowMat);
-    rightLight.position.set(1.1, 1.8, -9.6);
+    const rightLight = new THREE.Mesh(headlampGeo, headlightGlowMat);
+    rightLight.position.set(1.15, 1.65, -10.15);
+    rightLight.rotation.y = -Math.PI / 16;
     group.add(rightLight);
 
-    // Top high-beam light
-    const topLightGeo = new THREE.BoxGeometry(0.6, 0.2, 0.1);
+    // Chrome Bezel around headlights
+    const bezelGeo = new THREE.BoxGeometry(0.72, 0.34, 0.08);
+    const lBezel = new THREE.Mesh(bezelGeo, silverMetalMat);
+    lBezel.position.set(-1.15, 1.65, -10.1);
+    lBezel.rotation.y = Math.PI / 16;
+    group.add(lBezel);
+    const rBezel = new THREE.Mesh(bezelGeo, silverMetalMat);
+    rBezel.position.set(1.15, 1.65, -10.1);
+    rBezel.rotation.y = -Math.PI / 16;
+    group.add(rBezel);
+
+    // Center Top High-Beam Projector
+    const topLightGeo = new THREE.BoxGeometry(0.7, 0.25, 0.15);
     const topLight = new THREE.Mesh(topLightGeo, headlightGlowMat);
-    topLight.position.set(0, 3.8, -8.6);
+    topLight.position.set(0, 4.05, -9.15);
     group.add(topLight);
 
-    // Red Tail Lights on rear (+Z)
-    const rTail = new THREE.Mesh(headlightGeo, tailLightGlowMat);
-    rTail.position.set(-1.1, 2.0, 7.55);
+    // Rear Dual Red LED Marker Lamps (+Z)
+    const rTail = new THREE.Mesh(headlampGeo, tailLightGlowMat);
+    rTail.position.set(-1.15, 2.2, 8.05);
     group.add(rTail);
-    const lTail = new THREE.Mesh(headlightGeo, tailLightGlowMat);
-    lTail.position.set(1.1, 2.0, 7.55);
+    const lTail = new THREE.Mesh(headlampGeo, tailLightGlowMat);
+    lTail.position.set(1.15, 2.2, 8.05);
     group.add(lTail);
 
-    // 4. Aerodynamic Roof HVAC Pods
-    const roofPodGeo = new THREE.BoxGeometry(2.4, 0.5, 4.0);
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.3, metalness: 0.4 });
-    for (let z of [-3, 3]) {
-        const pod = new THREE.Mesh(roofPodGeo, roofMat);
-        pod.position.set(0, 4.85, z);
-        pod.castShadow = true;
-        group.add(pod);
+    // 5. Roof Equipment: Sculpted AC Housings, Pantograph & Fairings
+    const roofRibGeo = new THREE.BoxGeometry(3.2, 0.12, 16);
+    const roofRib = new THREE.Mesh(roofRibGeo, silverMetalMat);
+    roofRib.position.set(0, 4.75, 0);
+    group.add(roofRib);
+
+    // Sculpted Dual AC Units with Grilles
+    const acUnitGeo = new THREE.BoxGeometry(2.5, 0.55, 4.2);
+    for (let z of [-3.5, 3.5]) {
+        const ac = new THREE.Mesh(acUnitGeo, silverMetalMat);
+        ac.position.set(0, 4.95, z);
+        ac.castShadow = true;
+        group.add(ac);
+
+        // AC Intake Grille
+        const grilleGeo = new THREE.BoxGeometry(2.1, 0.1, 3.6);
+        const grille = new THREE.Mesh(grilleGeo, darkChassisMat);
+        grille.position.set(0, 5.25, z);
+        group.add(grille);
     }
 
-    // Roof Pantograph (Electrical current collector)
-    const pantoGeo = new THREE.BoxGeometry(1.6, 0.15, 1.2);
-    const pantoMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 });
-    const panto = new THREE.Mesh(pantoGeo, pantoMat);
-    panto.position.set(0, 5.2, 0);
-    group.add(panto);
+    // High-Voltage Articulated Pantograph Assembly
+    const pantoBaseGeo = new THREE.BoxGeometry(1.8, 0.15, 1.4);
+    const pantoBase = new THREE.Mesh(pantoBaseGeo, darkChassisMat);
+    pantoBase.position.set(0, 5.15, 0);
+    group.add(pantoBase);
 
-    // 5. Undercarriage Bogies & Steel Wheelsets
-    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 3.7, 16);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8, roughness: 0.3 });
-    for (let w of [-5.5, -3.0, 3.0, 5.5]) {
-        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(0, 0.5, w);
-        group.add(wheel);
+    // Ceramic Insulator Pots
+    const insulatorGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.35, 12);
+    const insulatorMat = new THREE.MeshStandardMaterial({ color: 0xb84b2b, roughness: 0.3 }); 
+    for (let ix of [-0.65, 0.65]) {
+        for (let iz of [-0.45, 0.45]) {
+            const ins = new THREE.Mesh(insulatorGeo, insulatorMat);
+            ins.position.set(ix, 5.35, iz);
+            group.add(ins);
+        }
     }
 
-    // Aerodynamic Lower Side Skirts
-    const skirtGeo = new THREE.BoxGeometry(3.62, 0.6, 14.5);
-    const skirtMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
-    const skirt = new THREE.Mesh(skirtGeo, skirtMat);
-    skirt.position.set(0, 0.7, 0);
+    // Pantograph Diamond/Z Arms & Contact Collector Horn
+    const armGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8);
+    const armL = new THREE.Mesh(armGeo, silverMetalMat);
+    armL.position.set(-0.4, 5.75, 0);
+    armL.rotation.z = Math.PI / 6;
+    group.add(armL);
+
+    const armR = new THREE.Mesh(armGeo, silverMetalMat);
+    armR.position.set(0.4, 5.75, 0);
+    armR.rotation.z = -Math.PI / 6;
+    group.add(armR);
+
+    const hornGeo = new THREE.BoxGeometry(2.4, 0.06, 0.25);
+    const horn = new THREE.Mesh(hornGeo, silverMetalMat);
+    horn.position.set(0, 6.2, 0);
+    group.add(horn);
+
+    // 6. Detailed Undercarriage Bogies, Suspension & Steel Flanged Wheels
+    for (let bogieZ of [-5.5, 5.5]) {
+        const bogieFrameGeo = new THREE.BoxGeometry(3.4, 0.35, 3.2);
+        const bogieFrame = new THREE.Mesh(bogieFrameGeo, darkChassisMat);
+        bogieFrame.position.set(0, 0.8, bogieZ);
+        group.add(bogieFrame);
+
+        for (let wheelOffset of [-1.1, 1.1]) {
+            const wZ = bogieZ + wheelOffset;
+            
+            const axleGeo = new THREE.CylinderGeometry(0.1, 0.1, 3.6, 16);
+            const axle = new THREE.Mesh(axleGeo, steelWheelMat);
+            axle.rotation.z = Math.PI / 2;
+            axle.position.set(0, 0.55, wZ);
+            group.add(axle);
+
+            const rimGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.22, 24);
+            const lWheel = new THREE.Mesh(rimGeo, steelWheelMat);
+            lWheel.rotation.z = Math.PI / 2;
+            lWheel.position.set(-1.65, 0.55, wZ);
+            group.add(lWheel);
+
+            const rWheel = new THREE.Mesh(rimGeo, steelWheelMat);
+            rWheel.rotation.z = Math.PI / 2;
+            rWheel.position.set(1.65, 0.55, wZ);
+            group.add(rWheel);
+        }
+    }
+
+    // Aerodynamic Lower Side Fairing Skirts
+    const skirtGeo = new THREE.BoxGeometry(3.64, 0.65, 15.6);
+    const skirt = new THREE.Mesh(skirtGeo, darkChassisMat);
+    skirt.position.set(0, 0.75, 0);
     group.add(skirt);
 
     return group;
