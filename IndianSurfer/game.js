@@ -533,52 +533,120 @@ function createSubwayPalmTree() {
     return group;
 }
 
-// --- Subway Surfers Tropical Village Building ---
+// --- Subway Surfers Coastal Bazaar House (Exact match to screenshot) ---
 function createTropicalBuilding() {
     const group = new THREE.Group();
 
-    const stuccoColors = [0xe07a5f, 0xf4a261, 0x2a9d8f, 0xe76f51, 0xf1c40f, 0x3b82f6];
-    const chosenColor = stuccoColors[Math.floor(Math.random() * stuccoColors.length)];
+    // Vibrant warm color palette from the screenshot
+    const wallColors = [0xd97736, 0xe06d2d, 0xc25e26, 0xd4803d];
+    const wallColor = wallColors[Math.floor(Math.random() * wallColors.length)];
 
-    const bldgMat = new THREE.MeshStandardMaterial({ color: chosenColor, roughness: 0.8 });
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0xb85437, roughness: 0.6 });
-    const windowMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2, metalness: 0.8 });
-    const awningMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.5, metalness: 0.4 });
+    const stuccoMat = new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.85 });
+    const woodBeamMat = new THREE.MeshStandardMaterial({ color: 0x3e2415, roughness: 0.85 });
+    const roofSlateMat = new THREE.MeshStandardMaterial({ color: 0x696975, roughness: 0.6, metalness: 0.25 });
+    const roofDarkMat = new THREE.MeshStandardMaterial({ color: 0x4a4a55, roughness: 0.65 });
+    const tealSidingMat = new THREE.MeshStandardMaterial({ color: 0x2e6f7d, roughness: 0.5, metalness: 0.3 });
+    const redAwningMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.7 });
+    const windowDarkMat = new THREE.MeshStandardMaterial({ color: 0x450a0a, roughness: 0.9 });
+    const palmLeafMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.6, side: THREE.DoubleSide });
 
-    const width = 6.5 + Math.random() * 2;
-    const height = 8.0 + Math.random() * 4;
-    const depth = 8.0 + Math.random() * 2;
+    const houseW = 6.8;
+    const houseH = 7.0;
+    const houseD = 9.5;
 
-    const houseGeo = new THREE.BoxGeometry(width, height, depth);
-    const house = new THREE.Mesh(houseGeo, bldgMat);
-    house.position.set(0, height / 2, 0);
-    house.castShadow = true;
-    house.receiveShadow = true;
-    group.add(house);
+    // 1. Main Terracotta / Ochre Stucco House Block
+    const mainGeo = new THREE.BoxGeometry(houseW, houseH, houseD);
+    const mainMesh = new THREE.Mesh(mainGeo, stuccoMat);
+    mainMesh.position.set(0, houseH / 2, 0);
+    mainMesh.castShadow = true;
+    mainMesh.receiveShadow = true;
+    group.add(mainMesh);
 
-    const roofGeo = new THREE.ConeGeometry(width * 0.75, 2.5, 4);
-    const roof = new THREE.Mesh(roofGeo, roofMat);
-    roof.position.set(0, height + 1.25, 0);
-    roof.rotation.y = Math.PI / 4;
+    // 2. Teal / Turquoise Corrugated Stall Front Panel
+    const panelGeo = new THREE.BoxGeometry(0.2, 3.2, houseD * 0.75);
+    const panel = new THREE.Mesh(panelGeo, tealSidingMat);
+    panel.position.set(-houseW / 2 - 0.08, 1.6, 0);
+    panel.castShadow = true;
+    group.add(panel);
+
+    // Horizontal ridge lines on teal panel
+    for (let py = 0.5; py < 3.2; py += 0.5) {
+        const ridgeGeo = new THREE.BoxGeometry(0.24, 0.08, houseD * 0.75);
+        const ridge = new THREE.Mesh(ridgeGeo, woodBeamMat);
+        ridge.position.set(-houseW / 2 - 0.1, py, 0);
+        group.add(ridge);
+    }
+
+    // 3. Narrow Vertical Window Slots with dark red trim
+    for (let wz of [-2.8, 0, 2.8]) {
+        const winGeo = new THREE.BoxGeometry(0.15, 1.8, 0.65);
+        const win = new THREE.Mesh(winGeo, windowDarkMat);
+        win.position.set(-houseW / 2 - 0.06, 5.0, wz);
+        group.add(win);
+    }
+
+    // 4. Large Sloped Overhanging Slate / Corrugated Tin Roof
+    const roofAngle = Math.PI / 8.0; // ~22.5 degree slope toward tracks
+    const roofLen = 6.8;
+    const roofDepth = houseD + 1.2;
+
+    const roofGeo = new THREE.BoxGeometry(roofLen, 0.22, roofDepth);
+    const roof = new THREE.Mesh(roofGeo, roofSlateMat);
+    roof.rotation.z = -roofAngle;
+    roof.position.set(-0.8, houseH + 0.6, 0);
     roof.castShadow = true;
+    roof.receiveShadow = true;
     group.add(roof);
 
-    const awningGeo = new THREE.BoxGeometry(width * 0.8, 0.15, 2.2);
-    const awning = new THREE.Mesh(awningGeo, awningMat);
-    awning.position.set(-width * 0.15, 3.8, 0);
-    awning.rotation.z = Math.PI / 10;
-    group.add(awning);
+    // Stepped Corrugated Overlap Ridges along the roof
+    for (let rz = -roofDepth / 2 + 1.2; rz < roofDepth / 2; rz += 2.4) {
+        const ridgeGeo = new THREE.BoxGeometry(roofLen + 0.1, 0.12, 0.25);
+        const ridge = new THREE.Mesh(ridgeGeo, roofDarkMat);
+        ridge.rotation.z = -roofAngle;
+        ridge.position.set(-0.8, houseH + 0.75, rz);
+        group.add(ridge);
+    }
 
-    const winGeo = new THREE.BoxGeometry(1.2, 1.6, 0.1);
-    for (let wy of [5.5, 8.5]) {
-        if (wy < height - 1) {
-            for (let wz of [-2, 2]) {
-                const win = new THREE.Mesh(winGeo, windowMat);
-                win.position.set(-width / 2 - 0.05, wy, wz);
-                win.rotation.y = Math.PI / 2;
-                group.add(win);
-            }
-        }
+    // Dark Timber Rafter / Fascia along lower roof edge
+    const fasciaGeo = new THREE.BoxGeometry(0.3, 0.35, roofDepth);
+    const fascia = new THREE.Mesh(fasciaGeo, woodBeamMat);
+    fascia.rotation.z = -roofAngle;
+    fascia.position.set(-roofLen / 2 - 0.8, houseH + 0.6 - (Math.sin(roofAngle) * roofLen / 2), 0);
+    group.add(fascia);
+
+    // 5. Heavy Angled Wooden Support Posts / Timber Pillars
+    for (let pz of [-houseD / 2 + 0.8, houseD / 2 - 0.8]) {
+        const postGeo = new THREE.BoxGeometry(0.22, 4.8, 0.22);
+        const post = new THREE.Mesh(postGeo, woodBeamMat);
+        post.position.set(-houseW / 2 - 0.8, 2.4, pz);
+        post.castShadow = true;
+        group.add(post);
+
+        const braceGeo = new THREE.BoxGeometry(0.18, 1.4, 0.18);
+        const brace = new THREE.Mesh(braceGeo, woodBeamMat);
+        brace.position.set(-houseW / 2 - 0.4, 4.2, pz);
+        brace.rotation.z = Math.PI / 4;
+        group.add(brace);
+    }
+
+    // 6. Secondary Red Cloth / Canvas Awning Overhang
+    const clothAwningGeo = new THREE.BoxGeometry(1.8, 0.15, 3.6);
+    const clothAwning = new THREE.Mesh(clothAwningGeo, redAwningMat);
+    clothAwning.rotation.z = -Math.PI / 6;
+    clothAwning.position.set(-houseW / 2 - 0.6, 3.6, 1.0);
+    clothAwning.castShadow = true;
+    group.add(clothAwning);
+
+    // 7. Stylized Palm Fronds Peeking Directly Over the Roof
+    const palmFrondGeo = new THREE.PlaneGeometry(3.2, 6.2);
+    for (let k = 0; k < 6; k++) {
+        const angle = (k / 6) * Math.PI - (Math.PI / 6);
+        const frond = new THREE.Mesh(palmFrondGeo, palmLeafMat);
+        frond.position.set(1.6 + Math.cos(angle) * 1.5, houseH + 2.2 + Math.sin(angle) * 0.8, (k - 3) * 1.3);
+        frond.rotation.y = angle;
+        frond.rotation.x = Math.PI / 4;
+        frond.castShadow = true;
+        group.add(frond);
     }
 
     return group;
@@ -1162,19 +1230,22 @@ function spawnTrackSegment(zPos) {
 
 function spawnScenery(zPos) {
     for (let side of [-1, 1]) {
-        const xPos = side * 10.5;
-        const zOffset = Math.random() * 8;
-
-        const isBuilding = Math.random() > 0.45;
-        if (isBuilding) {
-            const bldg = createTropicalBuilding();
-            bldg.position.set(xPos + (side * 2.5), 0, zPos + zOffset);
-            if (side > 0) bldg.rotation.y = Math.PI;
-            scene.add(bldg);
-            sceneries.push(bldg);
+        // Continuous building corridor alongside both left and right boundary walls
+        const bldg = createTropicalBuilding();
+        if (side < 0) {
+            bldg.position.set(-10.5, 0, zPos + 10);
+            bldg.rotation.y = 0; // Roof slopes down toward +X (track center)
         } else {
+            bldg.position.set(10.5, 0, zPos + 10);
+            bldg.rotation.y = Math.PI; // Roof slopes down toward -X (track center)
+        }
+        scene.add(bldg);
+        sceneries.push(bldg);
+
+        // Extra lush background palm trees behind the roofs
+        if (Math.random() > 0.4) {
             const palm = createSubwayPalmTree();
-            palm.position.set(xPos + (side * (1 + Math.random() * 3)), 0, zPos + zOffset);
+            palm.position.set(side * (14 + Math.random() * 4), 0, zPos + Math.random() * 15);
             scene.add(palm);
             sceneries.push(palm);
         }
