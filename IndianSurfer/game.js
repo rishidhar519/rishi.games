@@ -555,50 +555,69 @@ function createMagnetPickupMesh() {
     const group = new THREE.Group();
     
     const magnetRedMat = new THREE.MeshStandardMaterial({ 
-        color: 0xee1122, 
-        metalness: 0.75, 
-        roughness: 0.15, 
+        color: 0xee1522, 
+        metalness: 0.5, 
+        roughness: 0.2, 
         emissive: 0x440008, 
-        emissiveIntensity: 0.6 
+        emissiveIntensity: 0.4 
     });
     const magnetSilverMat = new THREE.MeshStandardMaterial({ 
-        color: 0xe8eef5, 
+        color: 0xf1f5f9, 
         metalness: 0.95, 
         roughness: 0.1 
     });
 
-    // 1. Curved Top Horseshoe Arc
-    const arcGeo = new THREE.TorusGeometry(0.55, 0.18, 16, 32, Math.PI);
-    const arc = new THREE.Mesh(arcGeo, magnetRedMat);
-    arc.rotation.z = Math.PI; 
-    arc.castShadow = true;
-    group.add(arc);
+    const extrudeSettings = {
+        depth: 0.35,
+        bevelEnabled: true,
+        bevelSegments: 4,
+        steps: 1,
+        bevelSize: 0.04,
+        bevelThickness: 0.04,
+        curveSegments: 32
+    };
 
-    // 2. Dual Red Arms
-    const armGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.65, 16);
-    const leftArm = new THREE.Mesh(armGeo, magnetRedMat);
-    leftArm.position.set(-0.55, -0.32, 0);
-    leftArm.castShadow = true;
-    group.add(leftArm);
+    // 1. Red Horseshoe Body (Arch + Legs)
+    const redShape = new THREE.Shape();
+    redShape.moveTo(0.42, -0.35);
+    redShape.lineTo(0.78, -0.35);
+    redShape.absarc(0, 0.1, 0.78, 0, Math.PI, false);
+    redShape.lineTo(-0.78, -0.35);
+    redShape.lineTo(-0.42, -0.35);
+    redShape.absarc(0, 0.1, 0.42, Math.PI, 0, true);
+    redShape.closePath();
 
-    const rightArm = new THREE.Mesh(armGeo, magnetRedMat);
-    rightArm.position.set(0.55, -0.32, 0);
-    rightArm.castShadow = true;
-    group.add(rightArm);
+    const redGeo = new THREE.ExtrudeGeometry(redShape, extrudeSettings);
+    redGeo.center();
+    const redMesh = new THREE.Mesh(redGeo, magnetRedMat);
+    redMesh.castShadow = true;
+    redMesh.receiveShadow = true;
+    group.add(redMesh);
 
-    // 3. Chrome Silver Magnetic Tips
-    const tipGeo = new THREE.CylinderGeometry(0.185, 0.185, 0.32, 16);
+    // 2. Chrome / Silver Pole Tips
+    const tipShape = new THREE.Shape();
+    tipShape.moveTo(-0.18, -0.2);
+    tipShape.lineTo(0.18, -0.2);
+    tipShape.lineTo(0.18, 0.2);
+    tipShape.lineTo(-0.18, 0.2);
+    tipShape.closePath();
+
+    const tipGeo = new THREE.ExtrudeGeometry(tipShape, extrudeSettings);
+    tipGeo.center();
+
     const leftTip = new THREE.Mesh(tipGeo, magnetSilverMat);
-    leftTip.position.set(-0.55, -0.8, 0);
+    leftTip.position.set(-0.60, -0.65, 0);
     leftTip.castShadow = true;
+    leftTip.receiveShadow = true;
     group.add(leftTip);
 
     const rightTip = new THREE.Mesh(tipGeo, magnetSilverMat);
-    rightTip.position.set(0.55, -0.8, 0);
+    rightTip.position.set(0.60, -0.65, 0);
     rightTip.castShadow = true;
+    rightTip.receiveShadow = true;
     group.add(rightTip);
 
-    group.scale.set(1.4, 1.4, 1.4);
+    group.scale.set(1.3, 1.3, 1.3);
     return group;
 }
 
