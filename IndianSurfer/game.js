@@ -326,6 +326,7 @@ const finalCoinsEl = document.getElementById('final-coins');
 let trackMaterial, groundMaterial, trainMaterial, barricadeMaterial, woodMaterial, leafMaterial, coinMaterial, railMaterial;
 let starMat, magnetMat, jetpackMat;
 let vandeOrangeMat, vandeBlueMat, headlightGlowMat, tailLightGlowMat;
+let equippedMagnetMesh = null, equippedJetpackMesh = null;
 
 function initMaterials() {
     zoneTextures.grass = createGrassTexture();
@@ -744,6 +745,9 @@ function loadModels(callback) {
         else if (equippedCharacter === 'green') initialColor = 0x2ecc71;
         else if (equippedCharacter === 'gold') initialColor = 0xf1c40f;
 
+        let rightHandBone = null;
+        let spineBone = null;
+
         player.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
@@ -751,7 +755,44 @@ function loadModels(callback) {
                 child.material = child.material.clone();
                 child.material.color.setHex(initialColor);
             }
+            if (child.isBone) {
+                const bName = child.name.toLowerCase();
+                if (bName.includes('righthand') || bName.includes('right_hand') || (bName.includes('hand') && bName.includes('r'))) {
+                    rightHandBone = child;
+                }
+                if (bName.includes('spine2') || bName.includes('spine1') || bName.includes('spine') || bName.includes('chest')) {
+                    if (!spineBone) spineBone = child;
+                }
+            }
         });
+
+        // 1. Equipped Magnet (Held in Right Hand)
+        equippedMagnetMesh = createMagnetPickupMesh();
+        equippedMagnetMesh.scale.set(0.35, 0.35, 0.35);
+        equippedMagnetMesh.rotation.set(0, Math.PI / 2, Math.PI / 2);
+        equippedMagnetMesh.visible = false;
+
+        if (rightHandBone) {
+            equippedMagnetMesh.position.set(0.08, 0.05, 0);
+            rightHandBone.add(equippedMagnetMesh);
+        } else {
+            equippedMagnetMesh.position.set(-0.35, 0.9, -0.15);
+            player.add(equippedMagnetMesh);
+        }
+
+        // 2. Equipped Jetpack (Mounted on Back)
+        equippedJetpackMesh = createJetpackPickupMesh();
+        equippedJetpackMesh.scale.set(0.55, 0.55, 0.55);
+        equippedJetpackMesh.rotation.set(0, Math.PI, 0); // Exhaust pointing down, thrusters on back
+        equippedJetpackMesh.visible = false;
+
+        if (spineBone) {
+            equippedJetpackMesh.position.set(0, 0.1, -0.18);
+            spineBone.add(equippedJetpackMesh);
+        } else {
+            equippedJetpackMesh.position.set(0, 1.25, -0.22);
+            player.add(equippedJetpackMesh);
+        }
 
         playerMixer = new THREE.AnimationMixer(player);
         playerActionRun = playerMixer.clipAction(gltfPlayer.animations[1]);
@@ -1284,6 +1325,8 @@ function resetGame() {
     
     // Reset Buffs
     activeBuffs = { magnet: 0, multiplier: 0, jetpack: 0 };
+    if (equippedMagnetMesh) equippedMagnetMesh.visible = false;
+    if (equippedJetpackMesh) equippedJetpackMesh.visible = false;
 
     player.position.set(0, 0, 0);
     player.rotation.set(0, Math.PI, 0);
@@ -1417,6 +1460,23 @@ function animate(time) {
             }
         }
     });
+
+    // Update Equipped visual items on character
+    if (equippedMagnetMesh) {
+        equippedMagnetMesh.visible = (activeBuffs.magnet > 0);
+    }
+    if (equippedJetpackMesh) {
+        equippedJetpackMesh.visible = (activeBuffs.jetpack > 0);
+        if (activeBuffs.jetpack > 0) {
+            // Animate rocket flames
+            const flamePulse = 1.0 + Math.sin(time * 0.04) * 0.35;
+            equippedJetpackMesh.traverse((child) => {
+                if (child.isMesh && child.geometry && child.geometry.type === 'ConeGeometry' && child.position.y < -0.5) {
+                    child.scale.set(1.0, flamePulse, 1.0);
+                }
+            });
+        }
+    }
 
     // Jetpack physics override
     if (activeBuffs.jetpack > 0) {
