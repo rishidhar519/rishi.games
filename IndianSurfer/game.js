@@ -669,6 +669,60 @@ function createModernTrainMesh(theme = 'orange') {
     return group;
 }
 
+// --- 3D Sloped Train Ramp (Guides Player up onto Train Roof) ---
+function createTrainRampMesh() {
+    const group = new THREE.Group();
+
+    // Length of ramp along Z is 8.5. Height reaches 4.75.
+    const rampAngle = Math.atan2(4.75, 8.5);
+    const rampHypot = Math.sqrt(4.75 * 4.75 + 8.5 * 8.5); // ~9.73
+
+    const woodDeckMat = new THREE.MeshStandardMaterial({ 
+        map: createWoodTexture(), 
+        roughness: 0.7 
+    });
+    const stripeMat = new THREE.MeshStandardMaterial({
+        map: orangeStripeMaterial.map,
+        roughness: 0.35
+    });
+    const steelMat = new THREE.MeshStandardMaterial({
+        color: 0x475569,
+        metalness: 0.8,
+        roughness: 0.3
+    });
+
+    // 1. Sloped Main Wooden Deck Ramp
+    const deckGeo = new THREE.BoxGeometry(3.6, 0.2, rampHypot);
+    const deck = new THREE.Mesh(deckGeo, woodDeckMat);
+    deck.rotation.x = -rampAngle;
+    deck.position.set(0, 2.38, -4.25);
+    deck.castShadow = true;
+    deck.receiveShadow = true;
+    group.add(deck);
+
+    // 2. High-Visibility Orange & White Hazard Side Curbs
+    const curbGeo = new THREE.BoxGeometry(0.25, 0.45, rampHypot);
+    for (let cx of [-1.7, 1.7]) {
+        const curb = new THREE.Mesh(curbGeo, stripeMat);
+        curb.rotation.x = -rampAngle;
+        curb.position.set(cx, 2.5, -4.25);
+        curb.castShadow = true;
+        group.add(curb);
+    }
+
+    // 3. Heavy-Duty Steel Truss Support Posts Under Ramp
+    for (let z of [-2, -4, -6]) {
+        const h = ((8.5 + z) / 8.5) * 4.6;
+        const postGeo = new THREE.BoxGeometry(3.5, h, 0.25);
+        const post = new THREE.Mesh(postGeo, steelMat);
+        post.position.set(0, h / 2, z);
+        post.castShadow = true;
+        group.add(post);
+    }
+
+    return group;
+}
+
 // --- Type III 3-Rail Highway Barricade (Orange & White) ---
 function createType3Barricade() {
     const group = new THREE.Group();
@@ -948,30 +1002,18 @@ function loadModels(callback) {
         // 1. Equipped Magnet (Held in Right Hand)
         equippedMagnetMesh = createMagnetPickupMesh();
         equippedMagnetMesh.scale.set(0.35, 0.35, 0.35);
+        equippedMagnetMesh.position.set(-0.5, 0.9, -0.15); // Right hand side
         equippedMagnetMesh.rotation.set(0, Math.PI / 2, Math.PI / 2);
         equippedMagnetMesh.visible = false;
-
-        if (rightHandBone) {
-            equippedMagnetMesh.position.set(0.08, 0.05, 0);
-            rightHandBone.add(equippedMagnetMesh);
-        } else {
-            equippedMagnetMesh.position.set(-0.35, 0.9, -0.15);
-            player.add(equippedMagnetMesh);
-        }
+        player.add(equippedMagnetMesh);
 
         // 2. Equipped Jetpack (Mounted on Back)
         equippedJetpackMesh = createJetpackPickupMesh();
-        equippedJetpackMesh.scale.set(0.55, 0.55, 0.55);
-        equippedJetpackMesh.rotation.set(0, Math.PI, 0); // Exhaust pointing down, thrusters on back
+        equippedJetpackMesh.scale.set(0.65, 0.65, 0.65);
+        equippedJetpackMesh.position.set(0, 1.25, 0.32); // On upper back facing camera
+        equippedJetpackMesh.rotation.set(0, 0, 0);
         equippedJetpackMesh.visible = false;
-
-        if (spineBone) {
-            equippedJetpackMesh.position.set(0, 0.1, -0.18);
-            spineBone.add(equippedJetpackMesh);
-        } else {
-            equippedJetpackMesh.position.set(0, 1.25, -0.22);
-            player.add(equippedJetpackMesh);
-        }
+        player.add(equippedJetpackMesh);
 
         playerMixer = new THREE.AnimationMixer(player);
         playerActionRun = playerMixer.clipAction(gltfPlayer.animations[1]);
@@ -1283,19 +1325,51 @@ function spawnObstacles(zPos) {
         return; // Don't spawn obstacle here
     }
 
-    if (rand < 0.35) { // Modern High-Speed Bullet Train / Vande Bharat
+    if (rand < 0.38) { // Modern High-Speed Bullet Train / Vande Bharat
         const lane = Math.floor(Math.random() * 3) - 1;
         const theme = (Math.random() > 0.45) ? 'orange' : 'blue'; // Vande Bharat Saffron & TGV Blue
         const group = createModernTrainMesh(theme);
-        group.position.set(lane * LANE_WIDTH, 0, zPos + 10);
+        const trainZ = zPos + 10;
+        group.position.set(lane * LANE_WIDTH, 0, trainZ);
         scene.add(group);
+        
+        // 55% chance for a ramp leading smoothly onto the train roof!
+        const hasRamp = (Math.random() < 0.55);
+        let rampGroup = null;
+        if (hasRamp) {
+            rampGroup = createTrainRampMesh();
+            rampGroup.position.set(lane * LANE_WIDTH, 0, trainZ - 8.5);
+            scene.add(rampGroup);
+
+            // Spawn trail of coins smoothly up the ramp and across the roof!
+            for (let i = 0; i < 6; i++) {
+                const prog = (i + 1) / 6;
+                const coinZ = (trainZ - 17) + (prog * 8.5);
+                const coinY = (prog * 4.75) + 1.2;
+                spawnCoin(lane, coinY, coinZ);
+            }
+            for (let i = 0; i < 4; i++) {
+                const coinZ = (trainZ - 6) + (i * 4);
+                spawnCoin(lane, 6.0, coinZ);
+            }
+        }
         
         const hitGeo = new THREE.BoxGeometry(3.6, 5, 17);
         const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible: false}));
-        hitMesh.position.set(lane * LANE_WIDTH, 2.5, zPos + 10);
+        hitMesh.position.set(lane * LANE_WIDTH, 2.5, trainZ);
         scene.add(hitMesh);
 
-        obstacles.push({ mesh: hitMesh, visual: group, type: 'train' });
+        obstacles.push({ 
+            mesh: hitMesh, 
+            visual: group, 
+            rampVisual: rampGroup,
+            type: 'train', 
+            hasRamp: hasRamp,
+            lane: lane,
+            zStart: trainZ - 8.5,
+            zEnd: trainZ + 8.5,
+            rampStart: trainZ - 17
+        });
     } else if (rand < 0.65) { // Barricades (Type III 3-rail construction barriers & Standard hurdles)
         const lane = Math.floor(Math.random() * 3) - 1;
         const isType3 = (Math.random() > 0.45); // Mix of new 3-rail orange/white barricades & standard hurdles
@@ -1477,6 +1551,7 @@ function resetGame() {
     obstacles.forEach(obs => {
         scene.remove(obs.mesh);
         if (obs.visual) scene.remove(obs.visual);
+        if (obs.rampVisual) scene.remove(obs.rampVisual);
     });
     coins.forEach(c => scene.remove(c));
     activePowerupMeshes.forEach(p => scene.remove(p.mesh));
@@ -1657,6 +1732,36 @@ function animate(time) {
         }
     }
 
+    // Calculate dynamic floor height (Ground y=0, Train roof y=4.75, or Ramp slope)
+    let targetFloorY = 0;
+    const pX = player.position.x;
+    const pZ = player.position.z;
+
+    for (let obs of obstacles) {
+        if (obs.type === 'train' && Math.abs(pX - obs.mesh.position.x) < 2.2) {
+            const trainZ = obs.mesh.position.z;
+            const noseZ = trainZ - 8.5;
+            const rearZ = trainZ + 8.5;
+
+            if (obs.hasRamp) {
+                const rampStart = obs.rampStart;
+                if (pZ >= rampStart && pZ < noseZ) {
+                    const prog = Math.max(0, Math.min(1, (pZ - rampStart) / (noseZ - rampStart)));
+                    const rampY = prog * 4.75;
+                    if (rampY > targetFloorY) targetFloorY = rampY;
+                }
+            }
+
+            // On the roof of the train
+            if (pZ >= noseZ && pZ <= rearZ) {
+                // If player is already on the roof, jumping onto roof, coming from ramp, or falling onto roof
+                if (player.position.y >= 3.6 || targetFloorY > 0) {
+                    targetFloorY = 4.75;
+                }
+            }
+        }
+    }
+
     // Jetpack physics override
     if (activeBuffs.jetpack > 0) {
         player.position.y += (12 - player.position.y) * 5 * dt; // Fly up to y=12
@@ -1665,13 +1770,19 @@ function animate(time) {
         if (Math.random() < 0.1) {
             spawnCoin(currentLane, 12, player.position.z + 50);
         }
-    } else if (player.position.y > 0 && !isJumping) {
-        // Fall back down smoothly when jetpack ends
-        yVelocity -= 30 * dt;
-        player.position.y += yVelocity * dt;
-        if(player.position.y <= 0) {
-            player.position.y = 0;
-            yVelocity = 0;
+    } else {
+        // Normal / Roof Gravity physics
+        if (player.position.y > targetFloorY || isJumping) {
+            yVelocity += GRAVITY * dt;
+            player.position.y += yVelocity * dt;
+            if (player.position.y <= targetFloorY) {
+                player.position.y = targetFloorY;
+                isJumping = false;
+                yVelocity = 0;
+            }
+        } else if (player.position.y < targetFloorY) {
+            // Smoothly ascend ramp slope
+            player.position.y = targetFloorY;
         }
     }
 
@@ -1693,16 +1804,6 @@ function animate(time) {
     const targetX = currentLane * LANE_WIDTH;
     player.position.x += (targetX - player.position.x) * 15 * dt;
 
-    if (isJumping && activeBuffs.jetpack <= 0) {
-        yVelocity += GRAVITY * dt;
-        player.position.y += yVelocity * dt;
-        if (player.position.y <= 0) {
-            player.position.y = 0;
-            isJumping = false;
-            yVelocity = 0;
-        }
-    }
-
     if (isRolling && activeBuffs.jetpack <= 0) {
         rollTimer -= dt;
         if (rollTimer <= 0) {
@@ -1710,7 +1811,7 @@ function animate(time) {
             if (player) {
                 player.rotation.x = 0;
                 player.scale.set(1.5, 1.5, 1.5);
-                if(!isJumping) player.position.y = 0;
+                if(!isJumping && player.position.y <= targetFloorY) player.position.y = targetFloorY;
             }
         }
     }
@@ -1814,13 +1915,19 @@ function animate(time) {
 
             if (playerBox.intersectsBox(obsBox)) {
                 if (obs.type === 'train') {
-                    gameOver();
+                    // If on train roof or ascending a ramp, player doesn't die!
+                    if (player.position.y >= 3.6 || (obs.hasRamp && player.position.z < obs.mesh.position.z - 4)) {
+                        // Safe on roof or on ramp
+                    } else {
+                        gameOver();
+                    }
                 } else {
                     isStumbling = true;
                     stumbleTimer = 1.0; 
                     
                     scene.remove(obs.mesh);
                     if (obs.visual) scene.remove(obs.visual);
+                    if (obs.rampVisual) scene.remove(obs.rampVisual);
                     obstacles.splice(i, 1);
                     
                     player.rotation.z = (Math.random() > 0.5 ? 1 : -1) * 0.3;
@@ -1829,9 +1936,10 @@ function animate(time) {
                 continue;
             }
 
-            if (obs.mesh.position.z < player.position.z - 15) {
+            if (obs.mesh.position.z < player.position.z - 25) {
                 scene.remove(obs.mesh);
                 if (obs.visual) scene.remove(obs.visual);
+                if (obs.rampVisual) scene.remove(obs.rampVisual);
                 obstacles.splice(i, 1);
             }
         }
