@@ -550,6 +550,167 @@ function createStandardBarricade() {
     return { group, height: 1.4, hitboxY: 0.7, hitboxH: 1.4 };
 }
 
+// --- 3D Horseshoe Magnet Pickup Mesh (Glossy Red with Chrome Tips) ---
+function createMagnetPickupMesh() {
+    const group = new THREE.Group();
+    
+    const magnetRedMat = new THREE.MeshStandardMaterial({ 
+        color: 0xee1122, 
+        metalness: 0.75, 
+        roughness: 0.15, 
+        emissive: 0x440008, 
+        emissiveIntensity: 0.6 
+    });
+    const magnetSilverMat = new THREE.MeshStandardMaterial({ 
+        color: 0xe8eef5, 
+        metalness: 0.95, 
+        roughness: 0.1 
+    });
+
+    // 1. Curved Top Horseshoe Arc
+    const arcGeo = new THREE.TorusGeometry(0.55, 0.18, 16, 32, Math.PI);
+    const arc = new THREE.Mesh(arcGeo, magnetRedMat);
+    arc.rotation.z = Math.PI; 
+    arc.castShadow = true;
+    group.add(arc);
+
+    // 2. Dual Red Arms
+    const armGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.65, 16);
+    const leftArm = new THREE.Mesh(armGeo, magnetRedMat);
+    leftArm.position.set(-0.55, -0.32, 0);
+    leftArm.castShadow = true;
+    group.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, magnetRedMat);
+    rightArm.position.set(0.55, -0.32, 0);
+    rightArm.castShadow = true;
+    group.add(rightArm);
+
+    // 3. Chrome Silver Magnetic Tips
+    const tipGeo = new THREE.CylinderGeometry(0.185, 0.185, 0.32, 16);
+    const leftTip = new THREE.Mesh(tipGeo, magnetSilverMat);
+    leftTip.position.set(-0.55, -0.8, 0);
+    leftTip.castShadow = true;
+    group.add(leftTip);
+
+    const rightTip = new THREE.Mesh(tipGeo, magnetSilverMat);
+    rightTip.position.set(0.55, -0.8, 0);
+    rightTip.castShadow = true;
+    group.add(rightTip);
+
+    group.scale.set(1.4, 1.4, 1.4);
+    return group;
+}
+
+// --- 3D Dual-Thruster Sci-Fi Jetpack Pickup Mesh (Chrome & Gold) ---
+function createJetpackPickupMesh() {
+    const group = new THREE.Group();
+
+    const chromeMat = new THREE.MeshStandardMaterial({ 
+        color: 0xd8e2ed, 
+        metalness: 0.92, 
+        roughness: 0.15 
+    });
+    const goldMat = new THREE.MeshStandardMaterial({ 
+        color: 0xd4af37, 
+        metalness: 0.85, 
+        roughness: 0.25 
+    });
+    const darkMat = new THREE.MeshStandardMaterial({ 
+        color: 0x222a35, 
+        metalness: 0.8, 
+        roughness: 0.4 
+    });
+    const flameMat = new THREE.MeshStandardMaterial({ 
+        color: 0xff7700, 
+        emissive: 0xff5500, 
+        emissiveIntensity: 2.5 
+    });
+
+    // 1. Central Engine Power Core / Harness
+    const coreGeo = new THREE.BoxGeometry(0.65, 0.9, 0.45);
+    const core = new THREE.Mesh(coreGeo, goldMat);
+    core.castShadow = true;
+    group.add(core);
+
+    const topCowlGeo = new THREE.BoxGeometry(0.55, 0.25, 0.4);
+    const topCowl = new THREE.Mesh(topCowlGeo, darkMat);
+    topCowl.position.set(0, 0.5, 0);
+    group.add(topCowl);
+
+    const midPanelGeo = new THREE.BoxGeometry(0.42, 0.45, 0.48);
+    const midPanel = new THREE.Mesh(midPanelGeo, goldMat);
+    group.add(midPanel);
+
+    // Cross-connecting harness bar
+    const barGeo = new THREE.BoxGeometry(1.3, 0.18, 0.3);
+    const bar = new THREE.Mesh(barGeo, darkMat);
+    group.add(bar);
+
+    // 2. Dual Chrome Rocket Thrusters (Left & Right)
+    for (let x of [-0.62, 0.62]) {
+        // Rocket Body Cylinder
+        const thrusterGeo = new THREE.CylinderGeometry(0.22, 0.26, 1.3, 20);
+        const thruster = new THREE.Mesh(thrusterGeo, chromeMat);
+        thruster.position.set(x, 0, 0);
+        thruster.castShadow = true;
+        group.add(thruster);
+
+        // Top Conical Nose Cap
+        const capGeo = new THREE.ConeGeometry(0.22, 0.45, 20);
+        const cap = new THREE.Mesh(capGeo, chromeMat);
+        cap.position.set(x, 0.87, 0);
+        cap.castShadow = true;
+        group.add(cap);
+
+        // Bottom Flare Exhaust Nozzle
+        const nozzleGeo = new THREE.CylinderGeometry(0.28, 0.18, 0.35, 20);
+        const nozzle = new THREE.Mesh(nozzleGeo, darkMat);
+        nozzle.position.set(x, -0.8, 0);
+        nozzle.castShadow = true;
+        group.add(nozzle);
+
+        // Inside Flame Glow Nozzle
+        const flameGeo = new THREE.ConeGeometry(0.16, 0.35, 16);
+        const flame = new THREE.Mesh(flameGeo, flameMat);
+        flame.position.set(x, -1.0, 0);
+        flame.rotation.x = Math.PI; // pointing down
+        group.add(flame);
+    }
+
+    group.scale.set(1.2, 1.2, 1.2);
+    return group;
+}
+
+// --- 3D Multiplier 2X Star/Gem Pickup Mesh ---
+function createMultiplierPickupMesh() {
+    const group = new THREE.Group();
+    const starGeo = new THREE.OctahedronGeometry(0.7, 0);
+    const starMat = new THREE.MeshStandardMaterial({
+        color: 0xffd700,
+        emissive: 0x665500,
+        emissiveIntensity: 0.8,
+        metalness: 0.9,
+        roughness: 0.1
+    });
+    const star = new THREE.Mesh(starGeo, starMat);
+    star.castShadow = true;
+    group.add(star);
+
+    const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
+    const ringMat = new THREE.MeshStandardMaterial({
+        color: 0xffaa00,
+        emissive: 0x884400,
+        emissiveIntensity: 1.0,
+        metalness: 0.8
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    group.add(ring);
+
+    group.scale.set(1.2, 1.2, 1.2);
+    return group;
+}
+
 function loadModels(callback) {
     const loader = new THREE.GLTFLoader();
     const url = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/Soldier.glb';
@@ -860,21 +1021,24 @@ function spawnScenery(zPos) {
 function spawnObstacles(zPos) {
     const rand = Math.random();
     
-    // Spawn Powerup? (5% chance)
-    if (Math.random() < 0.05) {
+    // Spawn Powerup? (6% chance)
+    if (Math.random() < 0.06) {
         const lane = Math.floor(Math.random() * 3) - 1;
         const pType = Math.random();
         
-        let geo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-        let mat, typeStr;
+        let mesh, typeStr;
+        if (pType < 0.38) { 
+            mesh = createMagnetPickupMesh(); 
+            typeStr = 'magnet'; 
+        } else if (pType < 0.68) { 
+            mesh = createMultiplierPickupMesh(); 
+            typeStr = 'multiplier'; 
+        } else { 
+            mesh = createJetpackPickupMesh(); 
+            typeStr = 'jetpack'; 
+        }
         
-        if (pType < 0.33) { mat = magnetMat; typeStr = 'magnet'; }
-        else if (pType < 0.66) { mat = starMat; typeStr = 'multiplier'; }
-        else { mat = jetpackMat; typeStr = 'jetpack'; }
-        
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.set(lane * LANE_WIDTH, 2, zPos + 10);
-        mesh.castShadow = true;
+        mesh.position.set(lane * LANE_WIDTH, 1.6, zPos + 10);
         scene.add(mesh);
         activePowerupMeshes.push({ mesh, type: typeStr });
         return; // Don't spawn obstacle here
