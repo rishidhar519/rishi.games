@@ -289,41 +289,6 @@ function initMaterials() {
     jetpackMat = new THREE.MeshStandardMaterial({ map: createJetpackTexture(), roughness: 0.5 });
 }
 
-function createPlayerTexture(mainColor = '#ffea00', accentColor = '#ffffff') {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-
-    // Base Vibrant Yellow
-    ctx.fillStyle = mainColor;
-    ctx.fillRect(0, 0, 512, 512);
-
-    // Crisp White Athletic Stripes and Panels
-    ctx.fillStyle = accentColor;
-    ctx.fillRect(40, 0, 70, 512);
-    ctx.fillRect(200, 0, 80, 512);
-    ctx.fillRect(360, 0, 70, 512);
-    ctx.fillRect(0, 160, 512, 60);
-    ctx.fillRect(0, 340, 512, 50);
-
-    // Contrast athletic trim
-    ctx.fillStyle = '#222222';
-    ctx.fillRect(36, 0, 4, 512);
-    ctx.fillRect(110, 0, 4, 512);
-    ctx.fillRect(196, 0, 4, 512);
-    ctx.fillRect(280, 0, 4, 512);
-    ctx.fillRect(356, 0, 4, 512);
-    ctx.fillRect(430, 0, 4, 512);
-    ctx.fillRect(0, 156, 512, 4);
-    ctx.fillRect(0, 220, 512, 4);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    return texture;
-}
-
 function loadModels(callback) {
     const loader = new THREE.GLTFLoader();
     const url = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/Soldier.glb';
@@ -333,24 +298,17 @@ function loadModels(callback) {
         player.scale.set(1.5, 1.5, 1.5);
         player.rotation.y = Math.PI; 
         
-        let mainCol = '#ffea00';
-        let accCol = '#ffffff';
-        if (equippedCharacter === 'red') { mainCol = '#e74c3c'; accCol = '#ffffff'; }
-        else if (equippedCharacter === 'green') { mainCol = '#2ecc71'; accCol = '#ffffff'; }
-        else if (equippedCharacter === 'gold') { mainCol = '#f1c40f'; accCol = '#ffffff'; }
-
-        const playerTex = createPlayerTexture(mainCol, accCol);
+        let initialColor = 0xffea00; // Bright yellow & white default
+        if (equippedCharacter === 'red') initialColor = 0xe74c3c;
+        else if (equippedCharacter === 'green') initialColor = 0x2ecc71;
+        else if (equippedCharacter === 'gold') initialColor = 0xf1c40f;
 
         player.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
-                child.material = new THREE.MeshStandardMaterial({
-                    map: playerTex,
-                    color: 0xffffff,
-                    roughness: 0.4,
-                    metalness: 0.1
-                });
+                child.material = child.material.clone();
+                child.material.color.setHex(initialColor);
             }
         });
 
@@ -422,31 +380,12 @@ function init() {
         window.addEventListener('resize', onWindowResize);
         document.addEventListener('keydown', onKeyDown);
         
-        // Universal Touch & Pointer Controls
+        // Touch Swipe Controls for Mobile/Tablet
         const touchOptions = { passive: false };
         window.addEventListener('touchstart', handleTouchStart, touchOptions);
         window.addEventListener('touchmove', handleTouchMove, touchOptions);
         window.addEventListener('touchend', handleTouchEnd, touchOptions);
         window.addEventListener('touchcancel', handleTouchEnd, touchOptions);
-
-        // Bind on-screen virtual buttons for mobile
-        const bindButton = (id, action) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            const trigger = (e) => {
-                if (e.cancelable) e.preventDefault();
-                e.stopPropagation();
-                action();
-            };
-            el.addEventListener('pointerdown', trigger);
-            el.addEventListener('touchstart', trigger, { passive: false });
-            el.addEventListener('click', trigger);
-        };
-
-        bindButton('btn-left', moveLeft);
-        bindButton('btn-right', moveRight);
-        bindButton('btn-jump', jump);
-        bindButton('btn-roll', roll);
         
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', resetGame);
@@ -544,21 +483,16 @@ function updateShopUI() {
 
 function updatePlayerColor(charOrHex) {
     if(!player) return;
-    let mainCol = '#ffea00';
-    let accCol = '#ffffff';
+    let hex = 0xffea00; // Bright yellow default
 
-    if (charOrHex === 'red' || charOrHex === 0xe74c3c) { mainCol = '#e74c3c'; accCol = '#ffffff'; }
-    else if (charOrHex === 'green' || charOrHex === 0x2ecc71) { mainCol = '#2ecc71'; accCol = '#ffffff'; }
-    else if (charOrHex === 'gold' || charOrHex === 0xf1c40f) { mainCol = '#f1c40f'; accCol = '#ffffff'; }
-    else { mainCol = '#ffea00'; accCol = '#ffffff'; }
-
-    const tex = createPlayerTexture(mainCol, accCol);
+    if (charOrHex === 'red' || charOrHex === 0xe74c3c) hex = 0xe74c3c;
+    else if (charOrHex === 'green' || charOrHex === 0x2ecc71) hex = 0x2ecc71;
+    else if (charOrHex === 'gold' || charOrHex === 0xf1c40f) hex = 0xf1c40f;
+    else hex = 0xffea00;
 
     player.traverse((child) => {
         if (child.isMesh && child.material) {
-            child.material.map = tex;
-            child.material.color.setHex(0xffffff);
-            child.material.needsUpdate = true;
+            child.material.color.setHex(hex);
         }
     });
 }
@@ -802,10 +736,11 @@ function roll() {
     if (!isPlaying) return;
     if (!isJumping && !isRolling && activeBuffs.jetpack <= 0) {
         isRolling = true;
-        rollTimer = 0.8;
+        rollTimer = 0.65;
         if (player) {
-            player.rotation.x = Math.PI / 2 + 0.3; 
-            player.position.y -= 0.5;
+            player.rotation.x = Math.PI / 4; 
+            player.scale.set(1.5, 0.75, 1.8);
+            player.position.y = 0;
         }
     } else if (isJumping) {
         yVelocity = -JUMP_FORCE * 2.0; 
@@ -936,6 +871,7 @@ function resetGame() {
 
     player.position.set(0, 0, 0);
     player.rotation.set(0, Math.PI, 0);
+    player.scale.set(1.5, 1.5, 1.5);
     isJumping = false;
     isRolling = false;
     isStumbling = false;
@@ -1116,8 +1052,11 @@ function animate(time) {
         rollTimer -= dt;
         if (rollTimer <= 0) {
             isRolling = false;
-            player.rotation.x = 0;
-            if(!isJumping) player.position.y = 0;
+            if (player) {
+                player.rotation.x = 0;
+                player.scale.set(1.5, 1.5, 1.5);
+                if(!isJumping) player.position.y = 0;
+            }
         }
     }
 
