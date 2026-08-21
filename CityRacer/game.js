@@ -555,50 +555,7 @@ window.addEventListener('keyup', (e) => {
     if (key === 'arrowdown' || key === 's') input.brake = false;
 });
 
-// --- MOBILE ON-SCREEN TOUCH & MULTI-TOUCH ENGINE ---
-const touchSteerLeft = document.getElementById('touch-steer-left');
-const touchSteerRight = document.getElementById('touch-steer-right');
-const btnTouchNitro = document.getElementById('btn-touch-nitro');
-const btnTouchBrake = document.getElementById('btn-touch-brake');
-
-function setupTouchButton(el, onDown, onUp) {
-    if (!el) return;
-    
-    el.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        onDown();
-        el.classList.add('touch-active', 'pedal-active');
-    }, { passive: false });
-
-    el.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        onUp();
-        el.classList.remove('touch-active', 'pedal-active');
-    }, { passive: false });
-
-    el.addEventListener('touchcancel', (e) => {
-        onUp();
-        el.classList.remove('touch-active', 'pedal-active');
-    });
-
-    // Also support mouse clicks for testing on desktop
-    el.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        onDown();
-        el.classList.add('pedal-active');
-    });
-    el.addEventListener('mouseup', () => {
-        onUp();
-        el.classList.remove('pedal-active');
-    });
-}
-
-setupTouchButton(touchSteerLeft, () => { input.left = true; }, () => { input.left = false; });
-setupTouchButton(touchSteerRight, () => { input.right = true; }, () => { input.right = false; });
-setupTouchButton(btnTouchNitro, () => { input.accel = true; }, () => { input.accel = false; });
-setupTouchButton(btnTouchBrake, () => { input.brake = true; }, () => { input.brake = false; });
-
-// Direct Screen Drag & Touch Steering Anywhere on Screen
+// --- INVISIBLE FULL-SCREEN TOUCH & GESTURE CONTROLS ---
 let garageTouchStartX = 0;
 
 window.addEventListener('touchstart', (e) => {
