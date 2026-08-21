@@ -134,25 +134,67 @@ function createStripeTexture() {
     return tex;
 }
 
-function createMetalTexture() {
-    const canvas = createCanvas(256);
+function createVandeBharatTexture(theme = 'orange') {
+    const canvas = createCanvas(512);
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#b33939'; 
-    ctx.fillRect(0, 0, 256, 256);
-    for(let i=0; i<8000; i++) {
-        ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`;
-        ctx.fillRect(Math.random()*256, Math.random()*256, Math.random()*15+2, 2);
+
+    const primaryColor = (theme === 'orange') ? '#ff6008' : '#0052cc';
+    const accentColor = (theme === 'orange') ? '#ff8533' : '#3385ff';
+    const baseColor = '#eef2f6'; // Clean metallic white/silver
+
+    // Base coach body
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Modern lower aerodynamic skirt / dark zone
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 400, 512, 112);
+
+    // Signature livery band
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, 180, 512, 220);
+
+    // Bright accent stripe
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(0, 160, 512, 20);
+    ctx.fillRect(0, 390, 512, 10);
+
+    // Continuous tinted aerodynamic panoramic window strip
+    ctx.fillStyle = '#0b0f19';
+    ctx.fillRect(0, 210, 512, 120);
+
+    // Individual window pillars & glass reflections
+    for (let x = 20; x < 512; x += 64) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(x + 5, 215);
+        ctx.lineTo(x + 25, 215);
+        ctx.lineTo(x + 10, 325);
+        ctx.lineTo(x, 325);
+        ctx.fill();
+
+        // Window division pillars
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(x + 48, 210, 8, 120);
     }
-    ctx.fillStyle = '#f1c40f'; ctx.fillRect(0, 100, 256, 20);
-    ctx.fillStyle = '#ecf0f1'; ctx.fillRect(0, 120, 256, 10);
-    ctx.fillStyle = '#1a1a1a'; 
-    for(let x=20; x<256; x+=60) {
-        ctx.fillRect(x, 40, 40, 40);
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.beginPath(); ctx.moveTo(x+5, 40); ctx.lineTo(x+15, 40); ctx.lineTo(x+5, 80); ctx.fill();
-        ctx.fillStyle = '#1a1a1a';
+
+    // Modern Passenger Coach Doors with indicator lines
+    for (let d of [15, 460]) {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(d, 180, 35, 220);
+        ctx.fillStyle = (theme === 'orange') ? '#ffffff' : '#ff3344';
+        ctx.fillRect(d + 4, 210, 27, 80);
     }
-    return new THREE.CanvasTexture(canvas);
+
+    // Top roof aerodynamic border
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(0, 0, 512, 50);
+    ctx.fillStyle = primaryColor;
+    ctx.fillRect(0, 50, 512, 12);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
 }
 
 // --- Powerup Textures ---
@@ -263,6 +305,7 @@ const finalCoinsEl = document.getElementById('final-coins');
 // Materials
 let trackMaterial, groundMaterial, trainMaterial, barricadeMaterial, woodMaterial, leafMaterial, coinMaterial, railMaterial;
 let starMat, magnetMat, jetpackMat;
+let vandeOrangeMat, vandeBlueMat, headlightGlowMat, tailLightGlowMat;
 
 function initMaterials() {
     zoneTextures.grass = createGrassTexture();
@@ -280,13 +323,145 @@ function initMaterials() {
         map: createLeafTexture(), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8
     });
     barricadeMaterial = new THREE.MeshStandardMaterial({ map: createStripeTexture(), roughness: 0.6 });
-    trainMaterial = new THREE.MeshStandardMaterial({ map: createMetalTexture(), metalness: 0.7, roughness: 0.4 });
+    
+    // Modern High-Speed Bullet Train Materials (Vande Bharat Orange & Blue)
+    vandeOrangeMat = new THREE.MeshStandardMaterial({ 
+        map: createVandeBharatTexture('orange'), 
+        roughness: 0.25, 
+        metalness: 0.35 
+    });
+    vandeBlueMat = new THREE.MeshStandardMaterial({ 
+        map: createVandeBharatTexture('blue'), 
+        roughness: 0.25, 
+        metalness: 0.35 
+    });
+
+    headlightGlowMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xfff3cc,
+        emissiveIntensity: 1.5
+    });
+
+    tailLightGlowMat = new THREE.MeshStandardMaterial({
+        color: 0xff1122,
+        emissive: 0xff0022,
+        emissiveIntensity: 1.0
+    });
+
     coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0x443300, metalness: 0.8, roughness: 0.2 });
     railMaterial = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.9, roughness: 0.2 });
 
     starMat = new THREE.MeshStandardMaterial({ map: createStarTexture(), roughness: 0.5 });
     magnetMat = new THREE.MeshStandardMaterial({ map: createMagnetTexture(), roughness: 0.5 });
     jetpackMat = new THREE.MeshStandardMaterial({ map: createJetpackTexture(), roughness: 0.5 });
+}
+
+function createModernTrainMesh(theme = 'orange') {
+    const group = new THREE.Group();
+    const isOrange = (theme === 'orange');
+    const bodyMat = isOrange ? vandeOrangeMat : vandeBlueMat;
+    const primaryHex = isOrange ? 0xff6008 : 0x0052cc;
+
+    // 1. Main Aerodynamic Coach Body
+    const bodyGeo = new THREE.BoxGeometry(3.6, 4.2, 15);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.set(0, 2.6, 0);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+
+    // 2. Streamlined Slanted Bullet Nose (Facing incoming towards -Z)
+    const noseGeo = new THREE.BoxGeometry(3.5, 3.8, 3.6);
+    const noseMat = new THREE.MeshStandardMaterial({
+        color: primaryHex,
+        roughness: 0.2,
+        metalness: 0.3
+    });
+    const nose = new THREE.Mesh(noseGeo, noseMat);
+    nose.position.set(0, 2.2, -8.2);
+    nose.rotation.x = -Math.PI / 8; 
+    nose.castShadow = true;
+    group.add(nose);
+
+    // Aerodynamic Lower Bumper / Cowcatcher
+    const bumperGeo = new THREE.BoxGeometry(3.55, 1.2, 2.0);
+    const bumperMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
+    const bumper = new THREE.Mesh(bumperGeo, bumperMat);
+    bumper.position.set(0, 0.9, -8.8);
+    bumper.castShadow = true;
+    group.add(bumper);
+
+    // Front Windshield Glass (Curved aerodynamic black panoramic glass)
+    const glassGeo = new THREE.BoxGeometry(3.0, 1.4, 0.2);
+    const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x05070b,
+        roughness: 0.05,
+        metalness: 0.9
+    });
+    const glass = new THREE.Mesh(glassGeo, glassMat);
+    glass.position.set(0, 3.1, -9.2);
+    glass.rotation.x = -Math.PI / 7;
+    group.add(glass);
+
+    // 3. Glowing LED Headlights (Dual lower + Top center high-beam)
+    const headlightGeo = new THREE.BoxGeometry(0.5, 0.25, 0.1);
+    const leftLight = new THREE.Mesh(headlightGeo, headlightGlowMat);
+    leftLight.position.set(-1.1, 1.8, -9.6);
+    group.add(leftLight);
+
+    const rightLight = new THREE.Mesh(headlightGeo, headlightGlowMat);
+    rightLight.position.set(1.1, 1.8, -9.6);
+    group.add(rightLight);
+
+    // Top high-beam light
+    const topLightGeo = new THREE.BoxGeometry(0.6, 0.2, 0.1);
+    const topLight = new THREE.Mesh(topLightGeo, headlightGlowMat);
+    topLight.position.set(0, 3.8, -8.6);
+    group.add(topLight);
+
+    // Red Tail Lights on rear (+Z)
+    const rTail = new THREE.Mesh(headlightGeo, tailLightGlowMat);
+    rTail.position.set(-1.1, 2.0, 7.55);
+    group.add(rTail);
+    const lTail = new THREE.Mesh(headlightGeo, tailLightGlowMat);
+    lTail.position.set(1.1, 2.0, 7.55);
+    group.add(lTail);
+
+    // 4. Aerodynamic Roof HVAC Pods
+    const roofPodGeo = new THREE.BoxGeometry(2.4, 0.5, 4.0);
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.3, metalness: 0.4 });
+    for (let z of [-3, 3]) {
+        const pod = new THREE.Mesh(roofPodGeo, roofMat);
+        pod.position.set(0, 4.85, z);
+        pod.castShadow = true;
+        group.add(pod);
+    }
+
+    // Roof Pantograph (Electrical current collector)
+    const pantoGeo = new THREE.BoxGeometry(1.6, 0.15, 1.2);
+    const pantoMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 });
+    const panto = new THREE.Mesh(pantoGeo, pantoMat);
+    panto.position.set(0, 5.2, 0);
+    group.add(panto);
+
+    // 5. Undercarriage Bogies & Steel Wheelsets
+    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 3.7, 16);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8, roughness: 0.3 });
+    for (let w of [-5.5, -3.0, 3.0, 5.5]) {
+        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(0, 0.5, w);
+        group.add(wheel);
+    }
+
+    // Aerodynamic Lower Side Skirts
+    const skirtGeo = new THREE.BoxGeometry(3.62, 0.6, 14.5);
+    const skirtMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+    const skirt = new THREE.Mesh(skirtGeo, skirtMat);
+    skirt.position.set(0, 0.7, 0);
+    group.add(skirt);
+
+    return group;
 }
 
 function loadModels(callback) {
@@ -619,31 +794,16 @@ function spawnObstacles(zPos) {
         return; // Don't spawn obstacle here
     }
 
-    if (rand < 0.30) { // Train
+    if (rand < 0.35) { // Modern High-Speed Bullet Train / Vande Bharat
         const lane = Math.floor(Math.random() * 3) - 1;
-        const group = new THREE.Group();
-        
-        const trainGeo = new THREE.BoxGeometry(3.6, 5, 14);
-        const trainBody = new THREE.Mesh(trainGeo, trainMaterial);
-        trainBody.position.y = 3;
-        trainBody.castShadow = true;
-        group.add(trainBody);
-
-        const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 3.8, 16);
-        const wheelMat = new THREE.MeshStandardMaterial({color: 0x111111});
-        for(let w of [-5, -2, 2, 5]) {
-            const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-            wheel.rotation.z = Math.PI / 2;
-            wheel.position.set(0, 0.5, w);
-            group.add(wheel);
-        }
-
+        const theme = (Math.random() > 0.45) ? 'orange' : 'blue'; // Vande Bharat Saffron & TGV Blue
+        const group = createModernTrainMesh(theme);
         group.position.set(lane * LANE_WIDTH, 0, zPos + 10);
         scene.add(group);
         
-        const hitGeo = new THREE.BoxGeometry(3.6, 5, 14);
-        const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible:false}));
-        hitMesh.position.set(lane * LANE_WIDTH, 3, zPos + 10);
+        const hitGeo = new THREE.BoxGeometry(3.6, 5, 17);
+        const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible: false}));
+        hitMesh.position.set(lane * LANE_WIDTH, 2.5, zPos + 10);
         scene.add(hitMesh);
 
         obstacles.push({ mesh: hitMesh, visual: group, type: 'train' });
