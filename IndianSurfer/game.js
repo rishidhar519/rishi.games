@@ -289,6 +289,41 @@ function initMaterials() {
     jetpackMat = new THREE.MeshStandardMaterial({ map: createJetpackTexture(), roughness: 0.5 });
 }
 
+function createPlayerTexture(mainColor = '#ffea00', accentColor = '#ffffff') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Base Vibrant Yellow
+    ctx.fillStyle = mainColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Crisp White Athletic Stripes and Panels
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(40, 0, 70, 512);
+    ctx.fillRect(200, 0, 80, 512);
+    ctx.fillRect(360, 0, 70, 512);
+    ctx.fillRect(0, 160, 512, 60);
+    ctx.fillRect(0, 340, 512, 50);
+
+    // Contrast athletic trim
+    ctx.fillStyle = '#222222';
+    ctx.fillRect(36, 0, 4, 512);
+    ctx.fillRect(110, 0, 4, 512);
+    ctx.fillRect(196, 0, 4, 512);
+    ctx.fillRect(280, 0, 4, 512);
+    ctx.fillRect(356, 0, 4, 512);
+    ctx.fillRect(430, 0, 4, 512);
+    ctx.fillRect(0, 156, 512, 4);
+    ctx.fillRect(0, 220, 512, 4);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+}
+
 function loadModels(callback) {
     const loader = new THREE.GLTFLoader();
     const url = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@master/examples/models/gltf/Soldier.glb';
@@ -298,17 +333,24 @@ function loadModels(callback) {
         player.scale.set(1.5, 1.5, 1.5);
         player.rotation.y = Math.PI; 
         
-        let initialColor = 0x3498db;
-        if(equippedCharacter === 'red') initialColor = 0xe74c3c;
-        if(equippedCharacter === 'green') initialColor = 0x2ecc71;
-        if(equippedCharacter === 'gold') initialColor = 0xf1c40f;
+        let mainCol = '#ffea00';
+        let accCol = '#ffffff';
+        if (equippedCharacter === 'red') { mainCol = '#e74c3c'; accCol = '#ffffff'; }
+        else if (equippedCharacter === 'green') { mainCol = '#2ecc71'; accCol = '#ffffff'; }
+        else if (equippedCharacter === 'gold') { mainCol = '#f1c40f'; accCol = '#ffffff'; }
+
+        const playerTex = createPlayerTexture(mainCol, accCol);
 
         player.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
-                child.material = child.material.clone();
-                child.material.color.setHex(initialColor);
+                child.material = new THREE.MeshStandardMaterial({
+                    map: playerTex,
+                    color: 0xffffff,
+                    roughness: 0.4,
+                    metalness: 0.1
+                });
             }
         });
 
@@ -480,13 +522,15 @@ function updateShopUI() {
         }
     });
 
-    ['blue', 'red', 'green', 'gold'].forEach(char => {
+    ['yellow', 'blue', 'red', 'green', 'gold'].forEach(char => {
         let btn = document.getElementById(`char-${char}`);
         if(btn) {
-            if(equippedCharacter === char) {
+            const isEquipped = (equippedCharacter === char) || (char === 'yellow' && equippedCharacter === 'blue');
+            const isUnlocked = isEquipped || unlockedCharacters.includes(char) || (char === 'yellow' && unlockedCharacters.includes('blue'));
+            if(isEquipped) {
                 btn.innerText = "EQUIPPED";
                 btn.disabled = true;
-            } else if (unlockedCharacters.includes(char)) {
+            } else if (isUnlocked) {
                 btn.innerText = "EQUIP";
                 btn.disabled = false;
             } else {
@@ -498,11 +542,23 @@ function updateShopUI() {
     });
 }
 
-function updatePlayerColor(hexColor) {
+function updatePlayerColor(charOrHex) {
     if(!player) return;
+    let mainCol = '#ffea00';
+    let accCol = '#ffffff';
+
+    if (charOrHex === 'red' || charOrHex === 0xe74c3c) { mainCol = '#e74c3c'; accCol = '#ffffff'; }
+    else if (charOrHex === 'green' || charOrHex === 0x2ecc71) { mainCol = '#2ecc71'; accCol = '#ffffff'; }
+    else if (charOrHex === 'gold' || charOrHex === 0xf1c40f) { mainCol = '#f1c40f'; accCol = '#ffffff'; }
+    else { mainCol = '#ffea00'; accCol = '#ffffff'; }
+
+    const tex = createPlayerTexture(mainCol, accCol);
+
     player.traverse((child) => {
         if (child.isMesh && child.material) {
-            child.material.color.setHex(hexColor);
+            child.material.map = tex;
+            child.material.color.setHex(0xffffff);
+            child.material.needsUpdate = true;
         }
     });
 }
