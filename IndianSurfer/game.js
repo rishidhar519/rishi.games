@@ -8,132 +8,142 @@ function createCanvas(size) {
     return canvas;
 }
 
-// Zone 0: Railway
-function createGrassTexture() {
+// 1. Warm Golden Railway Ballast Bed
+function createBallastTexture() {
     const canvas = createCanvas(512);
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#4a5d23'; 
+    ctx.fillStyle = '#dfbe88'; // Warm sand/gravel base
     ctx.fillRect(0, 0, 512, 512);
-    for(let i=0; i<30000; i++) {
-        ctx.fillStyle = Math.random() > 0.5 ? '#556b2f' : '#3e4a1a';
-        ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
+
+    for(let i = 0; i < 22000; i++) {
+        const r = Math.random();
+        ctx.fillStyle = r > 0.6 ? '#caa56f' : (r > 0.3 ? '#eed6ac' : '#b38f58');
+        ctx.fillRect(Math.random()*512, Math.random()*512, Math.random()*3+1, Math.random()*3+1);
     }
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(5, 5);
+    tex.repeat.set(4, 4);
     return tex;
 }
 
-// Zone 1: Bazaar (Dusty / Cobblestone)
-function createBazaarTexture() {
+// 2. Terracotta Parapet Corridor Walls
+function createWallTexture() {
     const canvas = createCanvas(512);
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#c2a578'; // Sand color
+    
+    // Terracotta red brick/stone body
+    ctx.fillStyle = '#b85437';
     ctx.fillRect(0, 0, 512, 512);
-    // Draw some cobblestones
-    ctx.fillStyle = '#a68a5e';
-    for(let i=0; i<500; i++) {
+
+    // Stone block mortar lines
+    ctx.strokeStyle = '#8c3a22';
+    ctx.lineWidth = 4;
+    for (let y = 0; y < 512; y += 48) {
         ctx.beginPath();
-        ctx.arc(Math.random()*512, Math.random()*512, Math.random()*15+5, 0, Math.PI*2);
-        ctx.fill();
-    }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(5, 5);
-    return tex;
-}
-
-// Zone 2: Tunnel (Dark concrete)
-function createTunnelTexture() {
-    const canvas = createCanvas(512);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, 512, 512);
-    ctx.fillStyle = '#222';
-    for(let i=0; i<10000; i++) {
-        ctx.fillRect(Math.random()*512, Math.random()*512, 4, 4);
-    }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(5, 5);
-    return tex;
-}
-
-function createTrackTexture(zoneIndex) {
-    const canvas = createCanvas(256);
-    const ctx = canvas.getContext('2d');
-    
-    // Base color based on zone
-    if(zoneIndex === 0) ctx.fillStyle = '#444'; // Gravel
-    else if(zoneIndex === 1) ctx.fillStyle = '#8a6e45'; // Dusty road
-    else ctx.fillStyle = '#111'; // Tunnel floor
-    
-    ctx.fillRect(0, 0, 256, 256);
-    
-    // Sleepers only for zone 0
-    if(zoneIndex === 0) {
-        ctx.fillStyle = '#2c1e16';
-        for(let y=0; y<256; y+=32) ctx.fillRect(0, y+8, 256, 16);
-    }
-    
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1, 4);
-    return tex;
-}
-
-// --- Standard Textures ---
-function createWoodTexture() {
-    const canvas = createCanvas(256);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#5c3a21';
-    ctx.fillRect(0, 0, 256, 256);
-    ctx.strokeStyle = '#3e2411';
-    for(let i=0; i<100; i++) {
-        ctx.beginPath();
-        let x = Math.random() * 256;
-        ctx.moveTo(x, 0);
-        for(let y=0; y<=256; y+=20) ctx.lineTo(x + Math.sin(y*0.05 + x)*3, y);
-        ctx.lineWidth = Math.random() * 2 + 1;
+        ctx.moveTo(0, y);
+        ctx.lineTo(512, y);
         ctx.stroke();
-    }
-    return new THREE.CanvasTexture(canvas);
-}
 
-function createLeafTexture() {
-    const canvas = createCanvas(256);
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,256,256);
-    for(let i=0; i<200; i++) {
-        ctx.beginPath();
-        let radius = 20 + Math.random()*15;
-        let angle = Math.random() * Math.PI * 2;
-        let dist = Math.random() * 100;
-        ctx.arc(128 + Math.cos(angle)*dist, 128 + Math.sin(angle)*dist, radius, 0, Math.PI*2);
-        const g = 80 + Math.floor(Math.random()*60);
-        ctx.fillStyle = `rgba(20, ${g}, 20, 0.9)`;
-        ctx.fill();
+        const offset = (y / 48) % 2 === 0 ? 0 : 40;
+        for (let x = offset; x < 512; x += 80) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + 48);
+            ctx.stroke();
+        }
     }
-    return new THREE.CanvasTexture(canvas);
-}
 
-function createStripeTexture() {
-    const canvas = createCanvas(256);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffd700';
-    ctx.fillRect(0, 0, 256, 256);
-    ctx.fillStyle = '#111111';
-    for(let i=-256; i<512; i+=40) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0); ctx.lineTo(i+20, 0); ctx.lineTo(i-256+20, 256); ctx.lineTo(i-256, 256);
-        ctx.fill();
-    }
+    // Top Cream/Stone Coping Cap
+    ctx.fillStyle = '#f5ebdc';
+    ctx.fillRect(0, 0, 512, 44);
+    ctx.fillStyle = '#dfd3be';
+    ctx.fillRect(0, 40, 512, 6);
+
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(2, 1);
     return tex;
 }
 
+// 3. Dark Treated Railway Sleeper (Tie) Wood
+function createWoodTexture() {
+    const canvas = createCanvas(256);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#452b1a';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = '#2d1a0d';
+    ctx.lineWidth = 2;
+    for(let i=0; i<60; i++) {
+        ctx.beginPath();
+        let y = Math.random() * 256;
+        ctx.moveTo(0, y);
+        ctx.lineTo(256, y + (Math.random()-0.5)*15);
+        ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+}
+
+// 4. Chunky Gold Coin with 5-Point Star
+function createCoinStarTexture() {
+    const canvas = createCanvas(256);
+    const ctx = canvas.getContext('2d');
+    
+    // Gold gradient disc
+    const grad = ctx.createRadialGradient(128, 128, 20, 128, 128, 128);
+    grad.addColorStop(0, '#fff380');
+    grad.addColorStop(0.6, '#ffd700');
+    grad.addColorStop(0.9, '#e69500');
+    grad.addColorStop(1, '#b36b00');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Coin outer ring
+    ctx.strokeStyle = '#fff8b3';
+    ctx.lineWidth = 12;
+    ctx.beginPath();
+    ctx.arc(128, 128, 110, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#b36b00';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(128, 128, 98, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 5-Point Golden Star in Center
+    ctx.fillStyle = '#fff9d6';
+    ctx.beginPath();
+    const cx = 128, cy = 128, outerR = 55, innerR = 24;
+    for (let i = 0; i < 10; i++) {
+        const r = (i % 2 === 0) ? outerR : innerR;
+        const angle = (i * Math.PI / 5) - Math.PI / 2;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    return new THREE.CanvasTexture(canvas);
+}
+
+// 5. Radial Gold Light Halo for Ground Beneath Coin
+function createCoinGlowTexture() {
+    const canvas = createCanvas(128);
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(255, 225, 60, 0.7)');
+    grad.addColorStop(0.5, 'rgba(255, 180, 0, 0.35)');
+    grad.addColorStop(1, 'rgba(255, 180, 0, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(canvas);
+}
+
+// 6. Orange & White Hazard Stripe Texture
 function createOrangeStripeTexture() {
     const canvas = createCanvas(512);
     const ctx = canvas.getContext('2d');
@@ -154,139 +164,57 @@ function createOrangeStripeTexture() {
     return tex;
 }
 
-function createVandeBharatTexture(theme = 'orange') {
+// 7. Subway Surfers Metro Train Livery
+function createSubwayTrainTexture(theme = 'orange') {
     const canvas = createCanvas(1024);
     const ctx = canvas.getContext('2d');
 
-    const isOrange = (theme === 'orange');
-    const primaryColor = isOrange ? '#ff5500' : '#0052cc';
-    const primaryDark = isOrange ? '#cc3d00' : '#003999';
-    const accentColor = isOrange ? '#ff8833' : '#3385ff';
-    const baseWhite = '#f4f6fa';
-    const darkSkirt = '#18202c';
+    const isRed = (theme === 'orange');
+    const primaryColor = isRed ? '#e11d48' : '#2563eb';
+    const darkSkirt = '#1e293b';
 
-    // 1. Base Metallic White Coach Body
-    ctx.fillStyle = baseWhite;
+    // 1. Clean White Coach Body
+    ctx.fillStyle = '#f8fafc';
     ctx.fillRect(0, 0, 1024, 1024);
 
-    // Subtle metallic brushed panel lines
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.06)';
-    ctx.lineWidth = 2;
-    for (let x = 0; x < 1024; x += 128) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, 1024);
-        ctx.stroke();
-    }
-
-    // 2. Lower Aerodynamic Skirt / Chassis (Dark Grey / Black)
+    // 2. Dark Lower Chassis
     ctx.fillStyle = darkSkirt;
-    ctx.fillRect(0, 780, 1024, 244);
-    ctx.fillStyle = '#0f1722';
-    ctx.fillRect(0, 880, 1024, 144);
+    ctx.fillRect(0, 800, 1024, 224);
 
-    // Hazard safety trim above skirt
+    // 3. Bold Subway Surfers Signature Body Stripe
     ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 765, 1024, 15);
+    ctx.fillRect(0, 380, 1024, 380);
+
+    // Thin White Pinstripes
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 755, 1024, 10);
+    ctx.fillRect(0, 360, 1024, 20);
+    ctx.fillRect(0, 760, 1024, 20);
 
-    // 3. Signature High-Speed Aerodynamic Livery Bands
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 360, 1024, 380);
+    // 4. Tinted Windows with Frames
+    for (let x = 40; x < 1024; x += 150) {
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(x, 420, 110, 220);
 
-    ctx.fillStyle = primaryDark;
-    ctx.fillRect(0, 710, 1024, 35);
-    ctx.fillStyle = accentColor;
-    ctx.fillRect(0, 330, 1024, 30);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 8, 428, 94, 204);
 
-    // 4. Continuous Panoramic Dark Tinted Glass Window Ribbon
-    ctx.fillStyle = '#080c14';
-    ctx.fillRect(0, 420, 1024, 250);
-
-    // Window Frames, Glass Reflection Streaks & Interior Passenger Glow
-    for (let x = 30; x < 1024; x += 130) {
-        // Soft interior passenger cabin light glow
-        ctx.fillStyle = 'rgba(255, 235, 180, 0.25)';
-        ctx.fillRect(x + 10, 440, 95, 210);
-
-        // Passenger silhouettes
-        ctx.fillStyle = 'rgba(10, 15, 25, 0.55)';
-        ctx.beginPath();
-        ctx.arc(x + 40, 530, 20, 0, Math.PI * 2);
-        ctx.arc(x + 80, 530, 20, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillRect(x + 25, 550, 30, 60);
-        ctx.fillRect(x + 65, 550, 30, 60);
-
-        // Glass reflection sheen
-        const grad = ctx.createLinearGradient(x, 420, x + 110, 670);
-        grad.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
-        grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.08)');
-        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, 420, 115, 250);
-
-        // Window mullion pillars
-        ctx.fillStyle = '#18202c';
-        ctx.fillRect(x + 115, 420, 15, 250);
-    }
-
-    // 5. Realistic Automatic Sliding Passenger Coach Doors
-    for (let d of [40, 890]) {
-        // Door frame
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(d, 350, 90, 420);
-
-        // Door panel
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillRect(d + 6, 360, 78, 400);
-
-        // Door window
-        ctx.fillStyle = '#080c14';
-        ctx.fillRect(d + 18, 420, 54, 160);
-
-        // Door window reflection
         ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
         ctx.beginPath();
-        ctx.moveTo(d + 20, 420);
-        ctx.lineTo(d + 45, 420);
-        ctx.lineTo(d + 25, 580);
-        ctx.lineTo(d + 20, 580);
-        ctx.fill();
-
-        // Safety edge indicator stripe
-        ctx.fillStyle = isOrange ? '#ff5500' : '#e11d48';
-        ctx.fillRect(d + 42, 360, 6, 400);
-
-        // Illuminated Door Open Touch Button
-        ctx.fillStyle = '#22c55e';
-        ctx.beginPath();
-        ctx.arc(d + 26, 620, 6, 0, Math.PI * 2);
+        ctx.moveTo(x + 15, 428);
+        ctx.lineTo(x + 50, 428);
+        ctx.lineTo(x + 25, 632);
+        ctx.lineTo(x + 10, 632);
         ctx.fill();
     }
 
-    // 6. Stylized Train Branding & Lettering
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px Arial, sans-serif';
-    ctx.fillText(isOrange ? 'VANDE BHARAT' : 'SUPERFAST EXPRESS', 240, 395);
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.font = 'bold 22px Arial, sans-serif';
-    ctx.fillText('EXECUTIVE CHAIR CAR • C-1', 242, 700);
-
-    // 7. Roof Aerodynamic Fairing & Speed Ribs
-    ctx.fillStyle = '#64748b';
-    ctx.fillRect(0, 0, 1024, 120);
-    ctx.fillStyle = primaryColor;
-    ctx.fillRect(0, 120, 1024, 25);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 145, 1024, 12);
-
-    // Roof ventilation grooves
-    ctx.fillStyle = '#334155';
-    for (let y = 15; y < 105; y += 14) {
-        ctx.fillRect(0, y, 1024, 5);
+    // 5. Passenger Sliding Doors
+    for (let d of [20, 880]) {
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(d, 350, 90, 450);
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(d + 6, 360, 78, 430);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(d + 18, 420, 54, 160);
     }
 
     const tex = new THREE.CanvasTexture(canvas);
@@ -294,7 +222,7 @@ function createVandeBharatTexture(theme = 'orange') {
     return tex;
 }
 
-// --- Powerup Textures ---
+// 8. 2x Multiplier Powerup Texture
 function createStarTexture() {
     const canvas = createCanvas(128);
     const ctx = canvas.getContext('2d');
@@ -308,36 +236,8 @@ function createStarTexture() {
     return new THREE.CanvasTexture(canvas);
 }
 
-function createMagnetTexture() {
-    const canvas = createCanvas(128);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#3498db';
-    ctx.fillRect(0, 0, 128, 128);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 15;
-    ctx.beginPath();
-    ctx.arc(64, 70, 30, Math.PI, 0);
-    ctx.lineTo(94, 90); ctx.moveTo(34, 70); ctx.lineTo(34, 90);
-    ctx.stroke();
-    ctx.fillStyle = '#e74c3c'; ctx.fillRect(86, 90, 16, 20);
-    ctx.fillStyle = '#ecf0f1'; ctx.fillRect(26, 90, 16, 20);
-    return new THREE.CanvasTexture(canvas);
-}
-
-function createJetpackTexture() {
-    const canvas = createCanvas(128);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(0, 0, 128, 128);
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.moveTo(64, 20); ctx.lineTo(84, 100); ctx.lineTo(44, 100);
-    ctx.fill();
-    return new THREE.CanvasTexture(canvas);
-}
-
 // --- Game Variables ---
-let scene, camera, renderer, dirLight;
+let scene, camera, renderer, dirLight, ambientLight;
 let player, cop;
 let playerMixer, copMixer;
 let playerActionRun, copActionRun;
@@ -350,10 +250,10 @@ let coinsCollected = 0;
 
 let currentLane = 0;
 let copCurrentLane = 0;
-const LANE_WIDTH = 4.5;
+const LANE_WIDTH = 3.6; // Subway Surfers standard 3-rail width
 
 let yVelocity = 0;
-const GRAVITY = -60;
+const GRAVITY = -65;
 const JUMP_FORCE = 22;
 let isJumping = false;
 let isRolling = false;
@@ -367,11 +267,7 @@ let coins = [];
 let sceneries = [];
 let activePowerupMeshes = [];
 
-// Map Zones: 0=Railway, 1=Bazaar, 2=Tunnel
-let currentZone = 0; 
-let zoneTextures = {};
-
-// --- Persistent Data & Shop ---
+// Persistent Data & Shop
 let totalCoins = parseInt(localStorage.getItem('indianSurferTotalCoins')) || 0;
 let upgrades = JSON.parse(localStorage.getItem('indianSurferUpgrades')) || {
     magnet: 1, multiplier: 1, jetpack: 1
@@ -400,285 +296,130 @@ const finalDistanceEl = document.getElementById('final-distance');
 const finalCoinsEl = document.getElementById('final-coins');
 
 // Materials
-let trackMaterial, groundMaterial, trainMaterial, barricadeMaterial, woodMaterial, leafMaterial, coinMaterial, railMaterial;
-let starMat, magnetMat, jetpackMat;
-let vandeOrangeMat, vandeBlueMat, headlightGlowMat, tailLightGlowMat;
+let ballastMaterial, wallMaterial, woodMaterial, railMaterial, orangeStripeMaterial;
+let subwayRedMat, subwayBlueMat, coinStarMat, coinGlowMat, starMat;
 let equippedMagnetMesh = null, equippedJetpackMesh = null;
 
 function initMaterials() {
-    zoneTextures.grass = createGrassTexture();
-    zoneTextures.bazaar = createBazaarTexture();
-    zoneTextures.tunnel = createTunnelTexture();
-    zoneTextures.track0 = createTrackTexture(0);
-    zoneTextures.track1 = createTrackTexture(1);
-    zoneTextures.track2 = createTrackTexture(2);
-
-    groundMaterial = new THREE.MeshStandardMaterial({ map: zoneTextures.grass, roughness: 1.0 });
-    trackMaterial = new THREE.MeshStandardMaterial({ map: zoneTextures.track0, roughness: 0.9 });
-    
+    ballastMaterial = new THREE.MeshStandardMaterial({ map: createBallastTexture(), roughness: 0.95 });
+    wallMaterial = new THREE.MeshStandardMaterial({ map: createWallTexture(), roughness: 0.85 });
     woodMaterial = new THREE.MeshStandardMaterial({ map: createWoodTexture(), roughness: 0.9 });
-    leafMaterial = new THREE.MeshStandardMaterial({ 
-        map: createLeafTexture(), transparent: true, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8
-    });
-    barricadeMaterial = new THREE.MeshStandardMaterial({ map: createStripeTexture(), roughness: 0.6 });
-    orangeStripeMaterial = new THREE.MeshStandardMaterial({ 
-        map: createOrangeStripeTexture(), 
-        roughness: 0.35, 
-        metalness: 0.1 
-    });
-    
-    // Modern High-Speed Bullet Train Materials (Vande Bharat Orange & Blue)
-    vandeOrangeMat = new THREE.MeshStandardMaterial({ 
-        map: createVandeBharatTexture('orange'), 
-        roughness: 0.25, 
-        metalness: 0.35 
-    });
-    vandeBlueMat = new THREE.MeshStandardMaterial({ 
-        map: createVandeBharatTexture('blue'), 
-        roughness: 0.25, 
-        metalness: 0.35 
-    });
+    railMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.95, roughness: 0.15 });
+    orangeStripeMaterial = new THREE.MeshStandardMaterial({ map: createOrangeStripeTexture(), roughness: 0.35 });
 
-    headlightGlowMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        emissive: 0xfff3cc,
-        emissiveIntensity: 1.5
-    });
+    subwayRedMat = new THREE.MeshStandardMaterial({ map: createSubwayTrainTexture('orange'), roughness: 0.25, metalness: 0.35 });
+    subwayBlueMat = new THREE.MeshStandardMaterial({ map: createSubwayTrainTexture('blue'), roughness: 0.25, metalness: 0.35 });
 
-    tailLightGlowMat = new THREE.MeshStandardMaterial({
-        color: 0xff1122,
-        emissive: 0xff0022,
-        emissiveIntensity: 1.0
-    });
-
-    coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0x443300, metalness: 0.8, roughness: 0.2 });
-    railMaterial = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.9, roughness: 0.2 });
-
+    coinStarMat = createCoinStarTexture();
+    coinGlowMat = createCoinGlowTexture();
     starMat = new THREE.MeshStandardMaterial({ map: createStarTexture(), roughness: 0.5 });
-    magnetMat = new THREE.MeshStandardMaterial({ map: createMagnetTexture(), roughness: 0.5 });
-    jetpackMat = new THREE.MeshStandardMaterial({ map: createJetpackTexture(), roughness: 0.5 });
 }
 
+// --- Subway Surfers Classic Metro Train Mesh ---
 function createModernTrainMesh(theme = 'orange') {
     const group = new THREE.Group();
-    const isOrange = (theme === 'orange');
-    const bodyMat = isOrange ? vandeOrangeMat : vandeBlueMat;
-    const primaryHex = isOrange ? 0xff5500 : 0x0052cc;
+    const isRed = (theme === 'orange');
+    const primaryHex = isRed ? 0xe11d48 : 0x2563eb;
 
     // Materials
-    const darkChassisMat = new THREE.MeshStandardMaterial({ color: 0x18202c, roughness: 0.6, metalness: 0.5 });
-    const silverMetalMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.2, metalness: 0.85 });
-    const primaryNoseMat = new THREE.MeshStandardMaterial({ color: primaryHex, roughness: 0.2, metalness: 0.4 });
-    const darkGlassMat = new THREE.MeshStandardMaterial({ color: 0x060910, roughness: 0.05, metalness: 0.95 });
-    const steelWheelMat = new THREE.MeshStandardMaterial({ color: 0x222a35, roughness: 0.2, metalness: 0.9 });
-    const chromeEmblemMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.05 });
+    const bodyMat = isRed ? subwayRedMat : subwayBlueMat;
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.35, metalness: 0.2 });
+    const cabFaceMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5, metalness: 0.4 });
+    const bumperMat = new THREE.MeshStandardMaterial({ color: primaryHex, roughness: 0.4 });
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.1, metalness: 0.9 });
+    const yellowLightMat = new THREE.MeshStandardMaterial({ color: 0xfde047, emissive: 0xfacc15, emissiveIntensity: 2.0 });
+    const redTailMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xdc2626, emissiveIntensity: 1.5 });
+    const metalMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.3 });
 
-    // 1. Main Aerodynamic Coach Body
-    const bodyGeo = new THREE.BoxGeometry(3.6, 4.2, 16);
+    // 1. Main Train Coach Box Body
+    const bodyGeo = new THREE.BoxGeometry(3.3, 3.8, 16);
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.set(0, 2.6, 0);
+    body.position.set(0, 2.3, 0);
     body.castShadow = true;
     body.receiveShadow = true;
     group.add(body);
 
-    // 2. Sculpted Multi-Tier Aerodynamic Bullet Nose (Front Cabin facing -Z)
-    const hoodGeo = new THREE.BoxGeometry(3.56, 3.2, 3.8);
-    const hood = new THREE.Mesh(hoodGeo, primaryNoseMat);
-    hood.position.set(0, 2.35, -8.6);
-    hood.rotation.x = -Math.PI / 7.5; 
-    hood.castShadow = true;
-    group.add(hood);
+    // 2. Rounded Curved White Roof Cap (Subway Surfers signature profile)
+    const roofGeo = new THREE.CylinderGeometry(1.65, 1.65, 16.1, 24, 1, false, 0, Math.PI);
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.rotation.z = Math.PI;
+    roof.rotation.y = Math.PI / 2;
+    roof.position.set(0, 4.2, 0);
+    roof.castShadow = true;
+    group.add(roof);
 
-    // Low Aerodynamic Nose Wedge & Cowcatcher Splitter
-    const wedgeGeo = new THREE.BoxGeometry(3.58, 1.4, 2.8);
-    const wedge = new THREE.Mesh(wedgeGeo, darkChassisMat);
-    wedge.position.set(0, 0.95, -9.4);
-    wedge.castShadow = true;
-    group.add(wedge);
-
-    // Lower Air-dam Lip (Safety Highlight)
-    const lipGeo = new THREE.BoxGeometry(3.52, 0.35, 1.2);
-    const lip = new THREE.Mesh(lipGeo, primaryNoseMat);
-    lip.position.set(0, 0.35, -10.4);
-    group.add(lip);
-
-    // Front Knuckle Coupler (Schaku Coupler)
-    const couplerGeo = new THREE.BoxGeometry(0.5, 0.4, 0.9);
-    const coupler = new THREE.Mesh(couplerGeo, silverMetalMat);
-    coupler.position.set(0, 0.65, -10.8);
-    group.add(coupler);
-
-    // 3. Panoramic Wraparound Windshield Glass
-    const glassGeo = new THREE.BoxGeometry(3.1, 1.45, 0.2);
-    const glass = new THREE.Mesh(glassGeo, darkGlassMat);
-    glass.position.set(0, 3.2, -9.7);
-    glass.rotation.x = -Math.PI / 6.8;
-    group.add(glass);
-
-    // Silver Windshield Frame Trim
-    const frameGeo = new THREE.BoxGeometry(3.18, 0.08, 0.22);
-    const frameTop = new THREE.Mesh(frameGeo, silverMetalMat);
-    frameTop.position.set(0, 3.85, -9.5);
-    frameTop.rotation.x = -Math.PI / 6.8;
-    group.add(frameTop);
-
-    // Dual Wiper Blades
-    const wiperGeo = new THREE.BoxGeometry(0.04, 0.8, 0.04);
-    for (let wx of [-0.6, 0.6]) {
-        const wiper = new THREE.Mesh(wiperGeo, darkChassisMat);
-        wiper.position.set(wx, 3.1, -9.8);
-        wiper.rotation.z = Math.PI / 10 * (wx < 0 ? -1 : 1);
-        wiper.rotation.x = -Math.PI / 6.8;
-        group.add(wiper);
+    // Roof Center Ribs & HVAC Units
+    const ribGeo = new THREE.BoxGeometry(1.8, 0.25, 4.5);
+    for (let rz of [-3.5, 3.5]) {
+        const rib = new THREE.Mesh(ribGeo, metalMat);
+        rib.position.set(0, 4.9, rz);
+        group.add(rib);
     }
 
-    // Front Chrome Emblem Badge
-    const badgeGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.08, 24);
-    const badge = new THREE.Mesh(badgeGeo, chromeEmblemMat);
-    badge.rotation.x = Math.PI / 2 - Math.PI / 7.5;
-    badge.position.set(0, 2.05, -10.2);
-    group.add(badge);
+    // 3. Front Cab Face (-Z)
+    const cabGeo = new THREE.BoxGeometry(3.26, 3.6, 0.4);
+    const cab = new THREE.Mesh(cabGeo, cabFaceMat);
+    cab.position.set(0, 2.4, -8.1);
+    group.add(cab);
 
-    // 4. Projector Headlights (Aggressive Angular LED Headlights + Center High Beam)
-    const headlampGeo = new THREE.BoxGeometry(0.65, 0.28, 0.15);
-    const leftLight = new THREE.Mesh(headlampGeo, headlightGlowMat);
-    leftLight.position.set(-1.15, 1.65, -10.15);
-    leftLight.rotation.y = Math.PI / 16;
-    group.add(leftLight);
+    // Twin Driver Windshield Windows
+    const winGeo = new THREE.BoxGeometry(1.2, 1.3, 0.1);
+    const lWin = new THREE.Mesh(winGeo, glassMat);
+    lWin.position.set(-0.75, 2.9, -8.32);
+    group.add(lWin);
 
-    const rightLight = new THREE.Mesh(headlampGeo, headlightGlowMat);
-    rightLight.position.set(1.15, 1.65, -10.15);
-    rightLight.rotation.y = -Math.PI / 16;
-    group.add(rightLight);
+    const rWin = new THREE.Mesh(winGeo, glassMat);
+    rWin.position.set(0.75, 2.9, -8.32);
+    group.add(rWin);
 
-    // Chrome Bezel around headlights
-    const bezelGeo = new THREE.BoxGeometry(0.72, 0.34, 0.08);
-    const lBezel = new THREE.Mesh(bezelGeo, silverMetalMat);
-    lBezel.position.set(-1.15, 1.65, -10.1);
-    lBezel.rotation.y = Math.PI / 16;
-    group.add(lBezel);
-    const rBezel = new THREE.Mesh(bezelGeo, silverMetalMat);
-    rBezel.position.set(1.15, 1.65, -10.1);
-    rBezel.rotation.y = -Math.PI / 16;
-    group.add(rBezel);
+    // Front Bumper with Primary Color
+    const bumpGeo = new THREE.BoxGeometry(3.32, 0.8, 0.6);
+    const bump = new THREE.Mesh(bumpGeo, bumperMat);
+    bump.position.set(0, 0.8, -8.25);
+    bump.castShadow = true;
+    group.add(bump);
 
-    // Center Top High-Beam Projector
-    const topLightGeo = new THREE.BoxGeometry(0.7, 0.25, 0.15);
-    const topLight = new THREE.Mesh(topLightGeo, headlightGlowMat);
-    topLight.position.set(0, 4.05, -9.15);
-    group.add(topLight);
+    // Glowing Square LED Headlights
+    const lightGeo = new THREE.BoxGeometry(0.5, 0.35, 0.1);
+    const lLight = new THREE.Mesh(lightGeo, yellowLightMat);
+    lLight.position.set(-0.95, 1.4, -8.38);
+    group.add(lLight);
 
-    // Rear Dual Red LED Marker Lamps (+Z)
-    const rTail = new THREE.Mesh(headlampGeo, tailLightGlowMat);
-    rTail.position.set(-1.15, 2.2, 8.05);
-    group.add(rTail);
-    const lTail = new THREE.Mesh(headlampGeo, tailLightGlowMat);
-    lTail.position.set(1.15, 2.2, 8.05);
+    const rLight = new THREE.Mesh(lightGeo, yellowLightMat);
+    rLight.position.set(0.95, 1.4, -8.38);
+    group.add(rLight);
+
+    // Rear Red Tail Lights (+Z)
+    const lTail = new THREE.Mesh(lightGeo, redTailMat);
+    lTail.position.set(-0.95, 1.8, 8.05);
     group.add(lTail);
 
-    // 5. Roof Equipment: Sculpted AC Housings, Pantograph & Fairings
-    const roofRibGeo = new THREE.BoxGeometry(3.2, 0.12, 16);
-    const roofRib = new THREE.Mesh(roofRibGeo, silverMetalMat);
-    roofRib.position.set(0, 4.75, 0);
-    group.add(roofRib);
+    const rTail = new THREE.Mesh(lightGeo, redTailMat);
+    rTail.position.set(0.95, 1.8, 8.05);
+    group.add(rTail);
 
-    // Sculpted Dual AC Units with Grilles
-    const acUnitGeo = new THREE.BoxGeometry(2.5, 0.55, 4.2);
-    for (let z of [-3.5, 3.5]) {
-        const ac = new THREE.Mesh(acUnitGeo, silverMetalMat);
-        ac.position.set(0, 4.95, z);
-        ac.castShadow = true;
-        group.add(ac);
-
-        // AC Intake Grille
-        const grilleGeo = new THREE.BoxGeometry(2.1, 0.1, 3.6);
-        const grille = new THREE.Mesh(grilleGeo, darkChassisMat);
-        grille.position.set(0, 5.25, z);
-        group.add(grille);
+    // 4. Undercarriage Bogies & Wheels
+    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 3.4, 16);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.2 });
+    for (let wz of [-5.5, -3.0, 3.0, 5.5]) {
+        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(0, 0.45, wz);
+        group.add(wheel);
     }
-
-    // High-Voltage Articulated Pantograph Assembly
-    const pantoBaseGeo = new THREE.BoxGeometry(1.8, 0.15, 1.4);
-    const pantoBase = new THREE.Mesh(pantoBaseGeo, darkChassisMat);
-    pantoBase.position.set(0, 5.15, 0);
-    group.add(pantoBase);
-
-    // Ceramic Insulator Pots
-    const insulatorGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.35, 12);
-    const insulatorMat = new THREE.MeshStandardMaterial({ color: 0xb84b2b, roughness: 0.3 }); 
-    for (let ix of [-0.65, 0.65]) {
-        for (let iz of [-0.45, 0.45]) {
-            const ins = new THREE.Mesh(insulatorGeo, insulatorMat);
-            ins.position.set(ix, 5.35, iz);
-            group.add(ins);
-        }
-    }
-
-    // Pantograph Diamond/Z Arms & Contact Collector Horn
-    const armGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8);
-    const armL = new THREE.Mesh(armGeo, silverMetalMat);
-    armL.position.set(-0.4, 5.75, 0);
-    armL.rotation.z = Math.PI / 6;
-    group.add(armL);
-
-    const armR = new THREE.Mesh(armGeo, silverMetalMat);
-    armR.position.set(0.4, 5.75, 0);
-    armR.rotation.z = -Math.PI / 6;
-    group.add(armR);
-
-    const hornGeo = new THREE.BoxGeometry(2.4, 0.06, 0.25);
-    const horn = new THREE.Mesh(hornGeo, silverMetalMat);
-    horn.position.set(0, 6.2, 0);
-    group.add(horn);
-
-    // 6. Detailed Undercarriage Bogies, Suspension & Steel Flanged Wheels
-    for (let bogieZ of [-5.5, 5.5]) {
-        const bogieFrameGeo = new THREE.BoxGeometry(3.4, 0.35, 3.2);
-        const bogieFrame = new THREE.Mesh(bogieFrameGeo, darkChassisMat);
-        bogieFrame.position.set(0, 0.8, bogieZ);
-        group.add(bogieFrame);
-
-        for (let wheelOffset of [-1.1, 1.1]) {
-            const wZ = bogieZ + wheelOffset;
-            
-            const axleGeo = new THREE.CylinderGeometry(0.1, 0.1, 3.6, 16);
-            const axle = new THREE.Mesh(axleGeo, steelWheelMat);
-            axle.rotation.z = Math.PI / 2;
-            axle.position.set(0, 0.55, wZ);
-            group.add(axle);
-
-            const rimGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.22, 24);
-            const lWheel = new THREE.Mesh(rimGeo, steelWheelMat);
-            lWheel.rotation.z = Math.PI / 2;
-            lWheel.position.set(-1.65, 0.55, wZ);
-            group.add(lWheel);
-
-            const rWheel = new THREE.Mesh(rimGeo, steelWheelMat);
-            rWheel.rotation.z = Math.PI / 2;
-            rWheel.position.set(1.65, 0.55, wZ);
-            group.add(rWheel);
-        }
-    }
-
-    // Aerodynamic Lower Side Fairing Skirts
-    const skirtGeo = new THREE.BoxGeometry(3.64, 0.65, 15.6);
-    const skirt = new THREE.Mesh(skirtGeo, darkChassisMat);
-    skirt.position.set(0, 0.75, 0);
-    group.add(skirt);
 
     return group;
 }
 
-// --- 3D Sloped Train Ramp (Guides Player up onto Train Roof) ---
+// --- 3D Sloped Train Ramp ---
 function createTrainRampMesh() {
     const group = new THREE.Group();
 
-    // Length of ramp along Z is 8.5. Height reaches 4.75.
     const rampAngle = Math.atan2(4.75, 8.5);
-    const rampHypot = Math.sqrt(4.75 * 4.75 + 8.5 * 8.5); // ~9.73
+    const rampHypot = Math.sqrt(4.75 * 4.75 + 8.5 * 8.5);
 
     const woodDeckMat = new THREE.MeshStandardMaterial({ 
-        map: createWoodTexture(), 
+        map: woodMaterial.map, 
         roughness: 0.7 
     });
     const stripeMat = new THREE.MeshStandardMaterial({
@@ -691,8 +432,7 @@ function createTrainRampMesh() {
         roughness: 0.3
     });
 
-    // 1. Sloped Main Wooden Deck Ramp
-    const deckGeo = new THREE.BoxGeometry(3.6, 0.2, rampHypot);
+    const deckGeo = new THREE.BoxGeometry(3.3, 0.2, rampHypot);
     const deck = new THREE.Mesh(deckGeo, woodDeckMat);
     deck.rotation.x = -rampAngle;
     deck.position.set(0, 2.38, -4.25);
@@ -700,9 +440,8 @@ function createTrainRampMesh() {
     deck.receiveShadow = true;
     group.add(deck);
 
-    // 2. High-Visibility Orange & White Hazard Side Curbs
     const curbGeo = new THREE.BoxGeometry(0.25, 0.45, rampHypot);
-    for (let cx of [-1.7, 1.7]) {
+    for (let cx of [-1.55, 1.55]) {
         const curb = new THREE.Mesh(curbGeo, stripeMat);
         curb.rotation.x = -rampAngle;
         curb.position.set(cx, 2.5, -4.25);
@@ -710,10 +449,9 @@ function createTrainRampMesh() {
         group.add(curb);
     }
 
-    // 3. Heavy-Duty Steel Truss Support Posts Under Ramp
     for (let z of [-2, -4, -6]) {
         const h = ((8.5 + z) / 8.5) * 4.6;
-        const postGeo = new THREE.BoxGeometry(3.5, h, 0.25);
+        const postGeo = new THREE.BoxGeometry(3.2, h, 0.25);
         const post = new THREE.Mesh(postGeo, steelMat);
         post.position.set(0, h / 2, z);
         post.castShadow = true;
@@ -723,15 +461,137 @@ function createTrainRampMesh() {
     return group;
 }
 
-// --- Type III 3-Rail Highway Barricade (Orange & White) ---
+// --- Overhead Signal Gantry Arch ---
+function createGantryArch() {
+    const g = new THREE.Group();
+    const steelMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.85, roughness: 0.3 });
+    
+    // Left & Right upright posts
+    const postGeo = new THREE.BoxGeometry(0.3, 7.5, 0.3);
+    const lPost = new THREE.Mesh(postGeo, steelMat);
+    lPost.position.set(-6.3, 3.75, 0);
+    g.add(lPost);
+
+    const rPost = new THREE.Mesh(postGeo, steelMat);
+    rPost.position.set(6.3, 3.75, 0);
+    g.add(rPost);
+
+    // Cross beam
+    const beamGeo = new THREE.BoxGeometry(13.2, 0.35, 0.35);
+    const beam = new THREE.Mesh(beamGeo, steelMat);
+    beam.position.set(0, 7.2, 0);
+    g.add(beam);
+
+    // 3 Traffic Signal Lanterns
+    const signalGeo = new THREE.BoxGeometry(0.4, 0.8, 0.3);
+    const greenLightMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 2.0 });
+    for (let laneIdx of [-1, 0, 1]) {
+        const signal = new THREE.Mesh(signalGeo, steelMat);
+        signal.position.set(laneIdx * LANE_WIDTH, 6.7, 0);
+        g.add(signal);
+
+        const lightGeo = new THREE.SphereGeometry(0.12, 12, 12);
+        const light = new THREE.Mesh(lightGeo, greenLightMat);
+        light.position.set(laneIdx * LANE_WIDTH, 6.6, -0.16);
+        g.add(light);
+    }
+
+    return g;
+}
+
+// --- Subway Surfers 3D Palm Tree ---
+function createSubwayPalmTree() {
+    const group = new THREE.Group();
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 });
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.6, side: THREE.DoubleSide });
+
+    let curY = 0, curX = 0;
+    const curveDir = (Math.random() - 0.5) * 0.35;
+    for (let s = 0; s < 6; s++) {
+        const segGeo = new THREE.CylinderGeometry(0.45 - (s * 0.04), 0.52 - (s * 0.04), 1.6, 10);
+        const seg = new THREE.Mesh(segGeo, trunkMat);
+        seg.position.set(curX, curY + 0.8, 0);
+        seg.rotation.z = curveDir;
+        seg.castShadow = true;
+        group.add(seg);
+        curY += 1.5;
+        curX += curveDir * 1.5;
+    }
+
+    const frondGeo = new THREE.PlaneGeometry(2.2, 5.0);
+    for (let k = 0; k < 8; k++) {
+        const angle = (k / 8) * Math.PI * 2;
+        const frond = new THREE.Mesh(frondGeo, leafMat);
+        frond.position.set(curX + Math.cos(angle) * 1.2, curY + 0.2, Math.sin(angle) * 1.2);
+        frond.rotation.y = angle;
+        frond.rotation.x = Math.PI / 3.2;
+        frond.castShadow = true;
+        group.add(frond);
+    }
+
+    group.scale.set(1.4, 1.4, 1.4);
+    return group;
+}
+
+// --- Subway Surfers Tropical Village Building ---
+function createTropicalBuilding() {
+    const group = new THREE.Group();
+
+    const stuccoColors = [0xe07a5f, 0xf4a261, 0x2a9d8f, 0xe76f51, 0xf1c40f, 0x3b82f6];
+    const chosenColor = stuccoColors[Math.floor(Math.random() * stuccoColors.length)];
+
+    const bldgMat = new THREE.MeshStandardMaterial({ color: chosenColor, roughness: 0.8 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0xb85437, roughness: 0.6 });
+    const windowMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2, metalness: 0.8 });
+    const awningMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.5, metalness: 0.4 });
+
+    const width = 6.5 + Math.random() * 2;
+    const height = 8.0 + Math.random() * 4;
+    const depth = 8.0 + Math.random() * 2;
+
+    const houseGeo = new THREE.BoxGeometry(width, height, depth);
+    const house = new THREE.Mesh(houseGeo, bldgMat);
+    house.position.set(0, height / 2, 0);
+    house.castShadow = true;
+    house.receiveShadow = true;
+    group.add(house);
+
+    const roofGeo = new THREE.ConeGeometry(width * 0.75, 2.5, 4);
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.set(0, height + 1.25, 0);
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    group.add(roof);
+
+    const awningGeo = new THREE.BoxGeometry(width * 0.8, 0.15, 2.2);
+    const awning = new THREE.Mesh(awningGeo, awningMat);
+    awning.position.set(-width * 0.15, 3.8, 0);
+    awning.rotation.z = Math.PI / 10;
+    group.add(awning);
+
+    const winGeo = new THREE.BoxGeometry(1.2, 1.6, 0.1);
+    for (let wy of [5.5, 8.5]) {
+        if (wy < height - 1) {
+            for (let wz of [-2, 2]) {
+                const win = new THREE.Mesh(winGeo, windowMat);
+                win.position.set(-width / 2 - 0.05, wy, wz);
+                win.rotation.y = Math.PI / 2;
+                group.add(win);
+            }
+        }
+    }
+
+    return group;
+}
+
+// --- Type III 3-Rail Highway Barricade ---
 function createType3Barricade() {
     const group = new THREE.Group();
-    const plankGeo = new THREE.BoxGeometry(4.2, 0.65, 0.08);
+    const plankGeo = new THREE.BoxGeometry(3.6, 0.65, 0.08);
     const postGeo = new THREE.BoxGeometry(0.12, 3.4, 0.12);
     const footGeo = new THREE.BoxGeometry(0.12, 0.12, 1.6);
     const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.25 });
 
-    // 3 Horizontal Orange & White Striped Planks (Top, Middle, Bottom)
     for (let y of [0.9, 1.9, 2.9]) {
         const plank = new THREE.Mesh(plankGeo, orangeStripeMaterial);
         plank.position.set(0, y, 0);
@@ -740,51 +600,43 @@ function createType3Barricade() {
         group.add(plank);
     }
 
-    // 2 Vertical Perforated Steel Posts
-    for (let x of [-1.55, 1.55]) {
+    for (let x of [-1.35, 1.35]) {
         const post = new THREE.Mesh(postGeo, postMat);
         post.position.set(x, 1.7, -0.08);
         post.castShadow = true;
         group.add(post);
 
-        // Steel base foot on the ground
         const foot = new THREE.Mesh(footGeo, postMat);
         foot.position.set(x, 0.06, 0);
         foot.castShadow = true;
         group.add(foot);
-
-        // Stand riser bracket
-        const bracketGeo = new THREE.BoxGeometry(0.18, 0.4, 0.18);
-        const bracket = new THREE.Mesh(bracketGeo, postMat);
-        bracket.position.set(x, 0.25, 0);
-        group.add(bracket);
     }
 
     return { group, height: 3.4, hitboxY: 1.7, hitboxH: 3.4 };
 }
 
-// --- Standard Single-Rail Low Hurdle Barricade ---
+// --- Standard Hurdle Barricade ---
 function createStandardBarricade() {
     const group = new THREE.Group();
-    const barGeo = new THREE.BoxGeometry(4, 1.2, 0.5);
-    const bar = new THREE.Mesh(barGeo, barricadeMaterial);
-    bar.position.set(0, 0.8, 0);
-    bar.castShadow = true;
-    group.add(bar);
+    const plankGeo = new THREE.BoxGeometry(3.6, 0.6, 0.08);
+    const plank = new THREE.Mesh(plankGeo, orangeStripeMaterial);
+    plank.position.set(0, 0.9, 0);
+    plank.castShadow = true;
+    group.add(plank);
 
-    const legGeo = new THREE.BoxGeometry(0.2, 1.4, 0.8);
-    const legMat = new THREE.MeshStandardMaterial({color: 0x333333});
-    const lLeg = new THREE.Mesh(legGeo, legMat);
-    lLeg.position.set(-1.8, 0.7, 0);
-    const rLeg = new THREE.Mesh(legGeo, legMat);
-    rLeg.position.set(1.8, 0.7, 0);
-    group.add(lLeg);
-    group.add(rLeg);
+    const postGeo = new THREE.BoxGeometry(0.12, 1.4, 0.12);
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.25 });
+    for (let x of [-1.35, 1.35]) {
+        const post = new THREE.Mesh(postGeo, postMat);
+        post.position.set(x, 0.7, 0);
+        post.castShadow = true;
+        group.add(post);
+    }
 
     return { group, height: 1.4, hitboxY: 0.7, hitboxH: 1.4 };
 }
 
-// --- 3D Horseshoe Magnet Pickup Mesh (Glossy Red with Chrome Tips) ---
+// --- 3D Horseshoe Magnet Pickup Mesh ---
 function createMagnetPickupMesh() {
     const group = new THREE.Group();
     
@@ -811,7 +663,6 @@ function createMagnetPickupMesh() {
         curveSegments: 32
     };
 
-    // 1. Red Horseshoe Body (Arch + Legs)
     const redShape = new THREE.Shape();
     redShape.moveTo(0.42, -0.35);
     redShape.lineTo(0.78, -0.35);
@@ -828,7 +679,6 @@ function createMagnetPickupMesh() {
     redMesh.receiveShadow = true;
     group.add(redMesh);
 
-    // 2. Chrome / Silver Pole Tips
     const tipShape = new THREE.Shape();
     tipShape.moveTo(-0.18, -0.2);
     tipShape.lineTo(0.18, -0.2);
@@ -855,7 +705,7 @@ function createMagnetPickupMesh() {
     return group;
 }
 
-// --- 3D Dual-Thruster Sci-Fi Jetpack Pickup Mesh (Chrome & Gold) ---
+// --- 3D Dual-Thruster Sci-Fi Jetpack Pickup Mesh ---
 function createJetpackPickupMesh() {
     const group = new THREE.Group();
 
@@ -880,54 +730,41 @@ function createJetpackPickupMesh() {
         emissiveIntensity: 2.5 
     });
 
-    // 1. Central Engine Power Core / Harness
     const coreGeo = new THREE.BoxGeometry(0.65, 0.9, 0.45);
     const core = new THREE.Mesh(coreGeo, goldMat);
     core.castShadow = true;
     group.add(core);
 
     const topCowlGeo = new THREE.BoxGeometry(0.55, 0.25, 0.4);
-    const topCowl = new THREE.Mesh(topCowlGeo, darkMat);
+    topCowl = new THREE.Mesh(topCowlGeo, darkMat);
     topCowl.position.set(0, 0.5, 0);
     group.add(topCowl);
 
-    const midPanelGeo = new THREE.BoxGeometry(0.42, 0.45, 0.48);
-    const midPanel = new THREE.Mesh(midPanelGeo, goldMat);
-    group.add(midPanel);
-
-    // Cross-connecting harness bar
     const barGeo = new THREE.BoxGeometry(1.3, 0.18, 0.3);
     const bar = new THREE.Mesh(barGeo, darkMat);
     group.add(bar);
 
-    // 2. Dual Chrome Rocket Thrusters (Left & Right)
     for (let x of [-0.62, 0.62]) {
-        // Rocket Body Cylinder
-        const thrusterGeo = new THREE.CylinderGeometry(0.22, 0.26, 1.3, 20);
-        const thruster = new THREE.Mesh(thrusterGeo, chromeMat);
-        thruster.position.set(x, 0, 0);
-        thruster.castShadow = true;
-        group.add(thruster);
+        const cylinderGeo = new THREE.CylinderGeometry(0.24, 0.24, 1.3, 20);
+        const nacelle = new THREE.Mesh(cylinderGeo, chromeMat);
+        nacelle.position.set(x, 0, 0);
+        nacelle.castShadow = true;
+        group.add(nacelle);
 
-        // Top Conical Nose Cap
-        const capGeo = new THREE.ConeGeometry(0.22, 0.45, 20);
-        const cap = new THREE.Mesh(capGeo, chromeMat);
-        cap.position.set(x, 0.87, 0);
-        cap.castShadow = true;
-        group.add(cap);
+        const coneGeo = new THREE.ConeGeometry(0.24, 0.45, 20);
+        const noseCone = new THREE.Mesh(coneGeo, chromeMat);
+        noseCone.position.set(x, 0.85, 0);
+        group.add(noseCone);
 
-        // Bottom Flare Exhaust Nozzle
-        const nozzleGeo = new THREE.CylinderGeometry(0.28, 0.18, 0.35, 20);
+        const nozzleGeo = new THREE.CylinderGeometry(0.2, 0.27, 0.3, 20);
         const nozzle = new THREE.Mesh(nozzleGeo, darkMat);
-        nozzle.position.set(x, -0.8, 0);
-        nozzle.castShadow = true;
+        nozzle.position.set(x, -0.75, 0);
         group.add(nozzle);
 
-        // Inside Flame Glow Nozzle
-        const flameGeo = new THREE.ConeGeometry(0.16, 0.35, 16);
+        const flameGeo = new THREE.ConeGeometry(0.18, 0.65, 16);
         const flame = new THREE.Mesh(flameGeo, flameMat);
-        flame.position.set(x, -1.0, 0);
-        flame.rotation.x = Math.PI; // pointing down
+        flame.position.set(x, -1.15, 0);
+        flame.rotation.x = Math.PI;
         group.add(flame);
     }
 
@@ -935,20 +772,48 @@ function createJetpackPickupMesh() {
     return group;
 }
 
-// --- 3D Multiplier 2X Star/Gem Pickup Mesh ---
+// --- 3D 2X Multiplier Star Pickup Mesh ---
 function createMultiplierPickupMesh() {
     const group = new THREE.Group();
-    const starGeo = new THREE.OctahedronGeometry(0.7, 0);
-    const starMat = new THREE.MeshStandardMaterial({
-        color: 0xffd700,
-        emissive: 0x665500,
+
+    const starShape = new THREE.Shape();
+    const points = 5;
+    const outerRadius = 0.65;
+    const innerRadius = 0.28;
+
+    for (let i = 0; i < points * 2; i++) {
+        const r = (i % 2 === 0) ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / points - Math.PI / 2;
+        const x = Math.cos(angle) * r;
+        const y = Math.sin(angle) * r;
+        if (i === 0) starShape.moveTo(x, y);
+        else starShape.lineTo(x, y);
+    }
+    starShape.closePath();
+
+    const extrudeSettings = {
+        depth: 0.25,
+        bevelEnabled: true,
+        bevelSegments: 3,
+        steps: 1,
+        bevelSize: 0.05,
+        bevelThickness: 0.05
+    };
+
+    const starGeo = new THREE.ExtrudeGeometry(starShape, extrudeSettings);
+    starGeo.center();
+
+    const starGoldMat = new THREE.MeshStandardMaterial({
+        color: 0xffcc00,
+        emissive: 0x664400,
         emissiveIntensity: 0.8,
-        metalness: 0.9,
-        roughness: 0.1
+        metalness: 0.85,
+        roughness: 0.15
     });
-    const star = new THREE.Mesh(starGeo, starMat);
-    star.castShadow = true;
-    group.add(star);
+
+    const starMesh = new THREE.Mesh(starGeo, starGoldMat);
+    starMesh.castShadow = true;
+    group.add(starMesh);
 
     const ringGeo = new THREE.TorusGeometry(0.9, 0.08, 16, 32);
     const ringMat = new THREE.MeshStandardMaterial({
@@ -973,13 +838,10 @@ function loadModels(callback) {
         player.scale.set(1.5, 1.5, 1.5);
         player.rotation.y = Math.PI; 
         
-        let initialColor = 0xffea00; // Bright yellow & white default
+        let initialColor = 0xffea00; // Bright yellow default
         if (equippedCharacter === 'red') initialColor = 0xe74c3c;
         else if (equippedCharacter === 'green') initialColor = 0x2ecc71;
         else if (equippedCharacter === 'gold') initialColor = 0xf1c40f;
-
-        let rightHandBone = null;
-        let spineBone = null;
 
         player.traverse((child) => {
             if (child.isMesh) {
@@ -988,21 +850,12 @@ function loadModels(callback) {
                 child.material = child.material.clone();
                 child.material.color.setHex(initialColor);
             }
-            if (child.isBone) {
-                const bName = child.name.toLowerCase();
-                if (bName.includes('righthand') || bName.includes('right_hand') || (bName.includes('hand') && bName.includes('r'))) {
-                    rightHandBone = child;
-                }
-                if (bName.includes('spine2') || bName.includes('spine1') || bName.includes('spine') || bName.includes('chest')) {
-                    if (!spineBone) spineBone = child;
-                }
-            }
         });
 
         // 1. Equipped Magnet (Held in Right Hand)
         equippedMagnetMesh = createMagnetPickupMesh();
         equippedMagnetMesh.scale.set(0.35, 0.35, 0.35);
-        equippedMagnetMesh.position.set(-0.5, 0.9, -0.15); // Right hand side
+        equippedMagnetMesh.position.set(-0.5, 0.9, -0.15);
         equippedMagnetMesh.rotation.set(0, Math.PI / 2, Math.PI / 2);
         equippedMagnetMesh.visible = false;
         player.add(equippedMagnetMesh);
@@ -1010,7 +863,7 @@ function loadModels(callback) {
         // 2. Equipped Jetpack (Mounted on Back)
         equippedJetpackMesh = createJetpackPickupMesh();
         equippedJetpackMesh.scale.set(0.65, 0.65, 0.65);
-        equippedJetpackMesh.position.set(0, 1.25, 0.32); // On upper back facing camera
+        equippedJetpackMesh.position.set(0, 1.25, 0.32);
         equippedJetpackMesh.rotation.set(0, 0, 0);
         equippedJetpackMesh.visible = false;
         player.add(equippedJetpackMesh);
@@ -1046,22 +899,23 @@ function init() {
     initMaterials();
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x7ec0ee); 
-    scene.fog = new THREE.FogExp2(0x7ec0ee, 0.008);
+    scene.background = new THREE.Color(0x38bdf8); // Vivid tropical blue sky
+    scene.fog = new THREE.Fog(0x7dd3fc, 80, 220); // Warm atmospheric horizon fog
 
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 300);
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 400);
     
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.getElementById('game-container').appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    dirLight = new THREE.DirectionalLight(0xffeedd, 0.9);
-    dirLight.position.set(-30, 50, -30);
+    dirLight = new THREE.DirectionalLight(0xfffae0, 1.2);
+    dirLight.position.set(-25, 60, -25);
     dirLight.castShadow = true;
     dirLight.shadow.camera.top = 80;
     dirLight.shadow.camera.bottom = -80;
@@ -1093,6 +947,17 @@ function init() {
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', resetGame);
         
+        const pauseBtn = document.getElementById('pause-btn');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                if (!isPlaying) return;
+                isPlaying = false;
+                startScreen.classList.add('active');
+                document.querySelector('#start-screen h1').innerText = "PAUSED";
+                document.getElementById('start-btn').innerText = "RESUME";
+            });
+        }
+
         // Shop Listeners
         document.getElementById('shop-btn').addEventListener('click', () => {
             startScreen.classList.remove('active');
@@ -1218,33 +1083,72 @@ function buyUpgrade(item) {
 function spawnTrackSegment(zPos) {
     const group = new THREE.Group();
 
-    const groundGeo = new THREE.PlaneGeometry(120, 20);
-    const ground = new THREE.Mesh(groundGeo, groundMaterial);
+    // 1. Ballast Ground Bed
+    const groundGeo = new THREE.PlaneGeometry(32, 20);
+    const ground = new THREE.Mesh(groundGeo, ballastMaterial);
     ground.rotation.x = -Math.PI / 2;
-    ground.position.set(0, -0.1, 10);
+    ground.position.set(0, 0, 10);
     ground.receiveShadow = true;
     group.add(ground);
 
-    for (let i = -1; i <= 1; i++) {
-        const trackGeo = new THREE.PlaneGeometry(3.5, 20);
-        const track = new THREE.Mesh(trackGeo, trackMaterial);
-        track.rotation.x = -Math.PI / 2;
-        track.position.set(i * LANE_WIDTH, 0.01, 10);
-        track.receiveShadow = true;
-        group.add(track);
+    // 2. Continuous Left & Right Terracotta Parapet Walls
+    const wallGeo = new THREE.BoxGeometry(0.5, 3.2, 20);
+    const lWall = new THREE.Mesh(wallGeo, wallMaterial);
+    lWall.position.set(-6.8, 1.6, 10);
+    lWall.castShadow = true;
+    lWall.receiveShadow = true;
+    group.add(lWall);
 
-        if(currentZone < 2) { // Tunnels don't need shiny rails, they are dark
-            const railGeo = new THREE.BoxGeometry(0.2, 0.3, 20);
-            const railL = new THREE.Mesh(railGeo, railMaterial);
-            railL.position.set(i * LANE_WIDTH - 1.2, 0.15, 10);
-            railL.castShadow = true;
-            group.add(railL);
+    const rWall = new THREE.Mesh(wallGeo, wallMaterial);
+    rWall.position.set(6.8, 1.6, 10);
+    rWall.castShadow = true;
+    rWall.receiveShadow = true;
+    group.add(rWall);
 
-            const railR = new THREE.Mesh(railGeo, railMaterial);
-            railR.position.set(i * LANE_WIDTH + 1.2, 0.15, 10);
-            railR.castShadow = true;
-            group.add(railR);
+    // Decorative Pillar Posts
+    const pillarGeo = new THREE.BoxGeometry(0.7, 3.6, 0.7);
+    const lPillar = new THREE.Mesh(pillarGeo, wallMaterial);
+    lPillar.position.set(-6.8, 1.8, 10);
+    lPillar.castShadow = true;
+    group.add(lPillar);
+
+    const rPillar = new THREE.Mesh(pillarGeo, wallMaterial);
+    rPillar.position.set(6.8, 1.8, 10);
+    rPillar.castShadow = true;
+    group.add(rPillar);
+
+    // 3. Three 3D Railway Tracks with 14 Raised Wooden Sleepers & Steel Rails
+    const sleeperGeo = new THREE.BoxGeometry(2.6, 0.18, 0.45);
+    const railGeo = new THREE.BoxGeometry(0.12, 0.22, 20);
+
+    for (let laneIdx of [-1, 0, 1]) {
+        const laneX = laneIdx * LANE_WIDTH;
+
+        for (let s = 0; s < 14; s++) {
+            const sleeperZ = (s * (20 / 14)) + 0.7;
+            const sleeper = new THREE.Mesh(sleeperGeo, woodMaterial);
+            sleeper.position.set(laneX, 0.09, sleeperZ);
+            sleeper.castShadow = true;
+            sleeper.receiveShadow = true;
+            group.add(sleeper);
         }
+
+        const railL = new THREE.Mesh(railGeo, railMaterial);
+        railL.position.set(laneX - 0.95, 0.25, 10);
+        railL.castShadow = true;
+        group.add(railL);
+
+        const railR = new THREE.Mesh(railGeo, railMaterial);
+        railR.position.set(laneX + 0.95, 0.25, 10);
+        railR.castShadow = true;
+        group.add(railR);
+    }
+
+    // 4. Overhead Signal Gantry Arch every 60m
+    if (Math.floor(zPos / 20) % 3 === 0) {
+        const gantry = createGantryArch();
+        gantry.position.set(0, 0, 10);
+        group.add(gantry);
     }
 
     group.position.z = zPos;
@@ -1253,48 +1157,26 @@ function spawnTrackSegment(zPos) {
 
     spawnScenery(zPos);
 
-    if (zPos > 60) spawnObstacles(zPos);
+    if (zPos > 40) spawnObstacles(zPos);
 }
 
 function spawnScenery(zPos) {
-    // No trees in tunnel zone
-    if(currentZone === 2) return; 
-
     for (let side of [-1, 1]) {
-        if (Math.random() > 0.2) { 
-            const isTree = Math.random() > 0.4;
-            const xPos = side * (12 + Math.random() * 20);
-            const zOffset = Math.random() * 20;
-            const group = new THREE.Group();
-            
-            if (isTree && currentZone === 0) { // Trees only in Railway
-                const trunkGeo = new THREE.CylinderGeometry(0.5, 0.8, 6, 8);
-                const trunk = new THREE.Mesh(trunkGeo, woodMaterial);
-                trunk.position.y = 3;
-                trunk.castShadow = true;
-                group.add(trunk);
-                
-                const planeGeo = new THREE.PlaneGeometry(8, 8);
-                for(let k=0; k<4; k++) {
-                    const leafPlane = new THREE.Mesh(planeGeo, leafMaterial);
-                    leafPlane.position.y = 6;
-                    leafPlane.rotation.y = (Math.PI / 4) * k;
-                    leafPlane.castShadow = true;
-                    group.add(leafPlane);
-                }
-            } else { // Bushes/Rocks
-                const planeGeo = new THREE.PlaneGeometry(5, 5);
-                for(let k=0; k<3; k++) {
-                    const bushPlane = new THREE.Mesh(planeGeo, currentZone===0 ? leafMaterial : barricadeMaterial);
-                    bushPlane.position.y = 2.5;
-                    bushPlane.rotation.y = (Math.PI / 3) * k;
-                    bushPlane.castShadow = true;
-                    group.add(bushPlane);
-                }
-            }
-            group.position.set(xPos, 0, zPos + zOffset);
-            scene.add(group);
-            sceneries.push(group);
+        const xPos = side * 10.5;
+        const zOffset = Math.random() * 8;
+
+        const isBuilding = Math.random() > 0.45;
+        if (isBuilding) {
+            const bldg = createTropicalBuilding();
+            bldg.position.set(xPos + (side * 2.5), 0, zPos + zOffset);
+            if (side > 0) bldg.rotation.y = Math.PI;
+            scene.add(bldg);
+            sceneries.push(bldg);
+        } else {
+            const palm = createSubwayPalmTree();
+            palm.position.set(xPos + (side * (1 + Math.random() * 3)), 0, zPos + zOffset);
+            scene.add(palm);
+            sceneries.push(palm);
         }
     }
 }
@@ -1322,18 +1204,17 @@ function spawnObstacles(zPos) {
         mesh.position.set(lane * LANE_WIDTH, 1.6, zPos + 10);
         scene.add(mesh);
         activePowerupMeshes.push({ mesh, type: typeStr });
-        return; // Don't spawn obstacle here
+        return;
     }
 
-    if (rand < 0.38) { // Modern High-Speed Bullet Train / Vande Bharat
+    if (rand < 0.38) { // Classic Subway Surfers Train
         const lane = Math.floor(Math.random() * 3) - 1;
-        const theme = (Math.random() > 0.45) ? 'orange' : 'blue'; // Vande Bharat Saffron & TGV Blue
+        const theme = (Math.random() > 0.45) ? 'orange' : 'blue';
         const group = createModernTrainMesh(theme);
         const trainZ = zPos + 10;
         group.position.set(lane * LANE_WIDTH, 0, trainZ);
         scene.add(group);
         
-        // 55% chance for a ramp leading smoothly onto the train roof!
         const hasRamp = (Math.random() < 0.55);
         let rampGroup = null;
         if (hasRamp) {
@@ -1341,7 +1222,6 @@ function spawnObstacles(zPos) {
             rampGroup.position.set(lane * LANE_WIDTH, 0, trainZ - 8.5);
             scene.add(rampGroup);
 
-            // Spawn trail of coins smoothly up the ramp and across the roof!
             for (let i = 0; i < 6; i++) {
                 const prog = (i + 1) / 6;
                 const coinZ = (trainZ - 17) + (prog * 8.5);
@@ -1354,7 +1234,7 @@ function spawnObstacles(zPos) {
             }
         }
         
-        const hitGeo = new THREE.BoxGeometry(3.6, 5, 17);
+        const hitGeo = new THREE.BoxGeometry(3.3, 5, 16.5);
         const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible: false}));
         hitMesh.position.set(lane * LANE_WIDTH, 2.5, trainZ);
         scene.add(hitMesh);
@@ -1370,16 +1250,16 @@ function spawnObstacles(zPos) {
             zEnd: trainZ + 8.5,
             rampStart: trainZ - 17
         });
-    } else if (rand < 0.65) { // Barricades (Type III 3-rail construction barriers & Standard hurdles)
+    } else if (rand < 0.65) { // Barricades
         const lane = Math.floor(Math.random() * 3) - 1;
-        const isType3 = (Math.random() > 0.45); // Mix of new 3-rail orange/white barricades & standard hurdles
+        const isType3 = (Math.random() > 0.45);
         const barData = isType3 ? createType3Barricade() : createStandardBarricade();
         const group = barData.group;
 
         group.position.set(lane * LANE_WIDTH, 0, zPos + 10);
         scene.add(group);
         
-        const hitGeo = new THREE.BoxGeometry(4.2, barData.hitboxH, 0.8);
+        const hitGeo = new THREE.BoxGeometry(3.6, barData.hitboxH, 0.8);
         const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible: false}));
         hitMesh.position.set(lane * LANE_WIDTH, barData.hitboxY, zPos + 10);
         scene.add(hitMesh);
@@ -1389,20 +1269,42 @@ function spawnObstacles(zPos) {
         if (Math.random() > 0.35) spawnCoin(lane, barData.height + 0.6, zPos + 10);
     } else if (rand < 0.95) { // Coins
         const lane = Math.floor(Math.random() * 3) - 1;
-        // If Jetpack is active, don't spawn coins on ground normally? Or just let them be.
-        for (let i = 0; i < 4; i++) spawnCoin(lane, 1.5, zPos + 5 + (i * 3));
+        for (let i = 0; i < 4; i++) spawnCoin(lane, 1.4, zPos + 5 + (i * 3.5));
     }
 }
 
+// --- Chunky 3D Gold Coin with Star & Ground Glow ---
 function spawnCoin(lane, yPos, zPos) {
-    const coinGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.15, 16);
-    const coin = new THREE.Mesh(coinGeo, coinMaterial);
+    const group = new THREE.Group();
+
+    const coinGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.22, 24);
+    const coinMat = new THREE.MeshStandardMaterial({ 
+        map: coinStarMat,
+        metalness: 0.9, 
+        roughness: 0.15,
+        emissive: 0x553300,
+        emissiveIntensity: 0.4
+    });
+    const coin = new THREE.Mesh(coinGeo, coinMat);
     coin.rotation.x = Math.PI / 2;
-    coin.rotation.z = Math.random() * Math.PI;
-    coin.position.set(lane * LANE_WIDTH, yPos, zPos);
     coin.castShadow = true;
-    scene.add(coin);
-    coins.push(coin);
+    group.add(coin);
+
+    const glowGeo = new THREE.PlaneGeometry(1.8, 1.8);
+    const glowMat = new THREE.MeshBasicMaterial({
+        map: coinGlowMat,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.rotation.x = -Math.PI / 2;
+    glow.position.set(0, -yPos + 0.12, 0);
+    group.add(glow);
+
+    group.position.set(lane * LANE_WIDTH, yPos, zPos);
+    scene.add(group);
+    coins.push(group);
 }
 
 function onWindowResize() {
@@ -1507,29 +1409,16 @@ function handleTouchMove(evt) {
     const t = evt.touches ? evt.touches[0] : evt;
     const diffX = t.clientX - touchStartX;
     const diffY = t.clientY - touchStartY;
-    const threshold = 25; // 25px threshold
+    const threshold = 25;
 
     if (Math.abs(diffX) > threshold || Math.abs(diffY) > threshold) {
         if (Math.abs(diffX) > Math.abs(diffY)) {
-            // Horizontal swipe
-            if (diffX > 0) {
-                // Swiped right on screen -> Move Right
-                moveRight();
-            } else {
-                // Swiped left on screen -> Move Left
-                moveLeft();
-            }
+            if (diffX > 0) moveRight();
+            else moveLeft();
         } else {
-            // Vertical swipe
-            if (diffY < 0) {
-                // Swiped up on screen -> Jump
-                jump();
-            } else {
-                // Swiped down on screen -> Roll
-                roll();
-            }
+            if (diffY < 0) jump();
+            else roll();
         }
-        // Update anchor point for fluid chaining
         touchStartX = t.clientX;
         touchStartY = t.clientY;
     }
@@ -1541,6 +1430,8 @@ function handleTouchEnd(evt) {
 
 function startGame() {
     startScreen.classList.remove('active');
+    document.querySelector('#start-screen h1').innerText = "INDIAN SURFER";
+    document.getElementById('start-btn').innerText = "TAP TO PLAY";
     isPlaying = true;
     lastTime = performance.now();
 }
@@ -1562,13 +1453,6 @@ function resetGame() {
     coins = [];
     activePowerupMeshes = [];
     activePowerupsContainer.innerHTML = '';
-    
-    // Reset Zone
-    currentZone = 0;
-    groundMaterial.map = zoneTextures.grass;
-    trackMaterial.map = zoneTextures.track0;
-    scene.background.setHex(0x7ec0ee);
-    scene.fog.color.setHex(0x7ec0ee);
 
     isPlaying = true;
     distance = 0;
@@ -1577,7 +1461,6 @@ function resetGame() {
     currentLane = 0;
     copCurrentLane = 0;
     
-    // Reset Buffs
     activeBuffs = { magnet: 0, multiplier: 0, jetpack: 0 };
     if (equippedMagnetMesh) equippedMagnetMesh.visible = false;
     if (equippedJetpackMesh) equippedJetpackMesh.visible = false;
@@ -1591,23 +1474,27 @@ function resetGame() {
     stumbleTimer = 0;
     yVelocity = 0;
 
-    cop.position.set(0, 0, -10); 
+    cop.position.set(0, 0, -8); 
     
     for (let i = -2; i < 15; i++) spawnTrackSegment(i * 20);
     
-    camera.position.z = player.position.z - 15;
-    camera.position.y = player.position.y + 8;
-    camera.position.x = player.position.x * 0.5;
-    camera.lookAt(player.position.x * 0.2, 3, player.position.z + 30);
-    
+    updateCamera();
     updateUI();
     gameOverScreen.classList.remove('active');
     lastTime = performance.now();
 }
 
 function updateUI() {
-    distanceEl.innerText = Math.floor(distance) + 'm';
-    coinsEl.innerText = coinsCollected;
+    if (distanceEl) {
+        distanceEl.innerText = String(Math.floor(distance)).padStart(6, '0');
+    }
+    if (coinsEl) {
+        coinsEl.innerText = coinsCollected;
+    }
+    const multEl = document.getElementById('hud-mult-val');
+    if (multEl) {
+        multEl.innerText = (activeBuffs.multiplier > 0) ? 'x2' : 'x1';
+    }
 }
 
 function gameOver() {
@@ -1621,16 +1508,16 @@ function gameOver() {
     gameOverScreen.classList.add('active');
 }
 
+// --- Subway Surfers Close Dynamic Camera Framing ---
 function updateCamera() {
-    const targetZ = player.position.z - 15;
-    // Camera pulls back slightly when Jetpack is active
-    const targetY = player.position.y + (activeBuffs.jetpack > 0 ? 12 : 8);
-    const targetX = player.position.x * 0.5;
+    const targetZ = player.position.z - 7.5;
+    const targetY = player.position.y + (activeBuffs.jetpack > 0 ? 10.0 : 4.3);
+    const targetX = player.position.x * 0.4;
 
-    camera.position.z += (targetZ - camera.position.z) * 0.2;
-    camera.position.y += (targetY - camera.position.y) * 0.1;
-    camera.position.x += (targetX - camera.position.x) * 0.1;
-    camera.lookAt(player.position.x * 0.2, player.position.y + 3, player.position.z + 30);
+    camera.position.z += (targetZ - camera.position.z) * 0.25;
+    camera.position.y += (targetY - camera.position.y) * 0.15;
+    camera.position.x += (targetX - camera.position.x) * 0.2;
+    camera.lookAt(player.position.x * 0.2, player.position.y + 2.5, player.position.z + 16);
 }
 
 function getPlayerHitbox() {
@@ -1644,11 +1531,9 @@ function getPlayerHitbox() {
 }
 
 function activatePowerup(type) {
-    // Base 5 seconds + 2.5 seconds per upgrade level
     const duration = 5 + (upgrades[type] * 2.5);
     activeBuffs[type] = duration;
     
-    // Add UI
     const existing = document.getElementById(`hud-${type}`);
     if(!existing) {
         const div = document.createElement('div');
@@ -1659,29 +1544,6 @@ function activatePowerup(type) {
             <div class="powerup-bar-bg"><div class="powerup-bar-fill" id="fill-${type}"></div></div>
         `;
         activePowerupsContainer.appendChild(div);
-    }
-}
-
-function checkMapZones() {
-    let newZone = currentZone;
-    if(distance > 1000) newZone = 2; // Tunnel
-    else if(distance > 500) newZone = 1; // Bazaar
-    
-    if(newZone !== currentZone) {
-        currentZone = newZone;
-        if(currentZone === 1) {
-            groundMaterial.map = zoneTextures.bazaar;
-            trackMaterial.map = zoneTextures.track1;
-            scene.background.setHex(0xe6cda3); // Dusty sky
-            scene.fog.color.setHex(0xe6cda3);
-        } else if(currentZone === 2) {
-            groundMaterial.map = zoneTextures.tunnel;
-            trackMaterial.map = zoneTextures.track2;
-            scene.background.setHex(0x050505); // Dark tunnel
-            scene.fog.color.setHex(0x050505);
-        }
-        groundMaterial.needsUpdate = true;
-        trackMaterial.needsUpdate = true;
     }
 }
 
@@ -1718,12 +1580,14 @@ function animate(time) {
     // Update Equipped visual items on character
     if (equippedMagnetMesh) {
         equippedMagnetMesh.visible = (activeBuffs.magnet > 0);
+        if (activeBuffs.magnet > 0) {
+            equippedMagnetMesh.position.y = 0.9 + Math.sin(time * 0.015) * 0.1;
+        }
     }
     if (equippedJetpackMesh) {
         equippedJetpackMesh.visible = (activeBuffs.jetpack > 0);
         if (activeBuffs.jetpack > 0) {
-            // Animate rocket flames
-            const flamePulse = 1.0 + Math.sin(time * 0.04) * 0.35;
+            const flamePulse = 1.0 + Math.sin(time * 0.04) * 0.4;
             equippedJetpackMesh.traverse((child) => {
                 if (child.isMesh && child.geometry && child.geometry.type === 'ConeGeometry' && child.position.y < -0.5) {
                     child.scale.set(1.0, flamePulse, 1.0);
@@ -1738,7 +1602,7 @@ function animate(time) {
     const pZ = player.position.z;
 
     for (let obs of obstacles) {
-        if (obs.type === 'train' && Math.abs(pX - obs.mesh.position.x) < 2.2) {
+        if (obs.type === 'train' && Math.abs(pX - obs.mesh.position.x) < 2.0) {
             const trainZ = obs.mesh.position.z;
             const noseZ = trainZ - 8.5;
             const rearZ = trainZ + 8.5;
@@ -1752,9 +1616,7 @@ function animate(time) {
                 }
             }
 
-            // On the roof of the train
             if (pZ >= noseZ && pZ <= rearZ) {
-                // If player is already on the roof, jumping onto roof, coming from ramp, or falling onto roof
                 if (player.position.y >= 3.6 || targetFloorY > 0) {
                     targetFloorY = 4.75;
                 }
@@ -1764,14 +1626,11 @@ function animate(time) {
 
     // Jetpack physics override
     if (activeBuffs.jetpack > 0) {
-        player.position.y += (12 - player.position.y) * 5 * dt; // Fly up to y=12
-        
-        // Spawn sky coins dynamically in front of player
-        if (Math.random() < 0.1) {
-            spawnCoin(currentLane, 12, player.position.z + 50);
+        player.position.y += (11 - player.position.y) * 5 * dt;
+        if (Math.random() < 0.12) {
+            spawnCoin(currentLane, 11, player.position.z + 40);
         }
     } else {
-        // Normal / Roof Gravity physics
         if (player.position.y > targetFloorY || isJumping) {
             yVelocity += GRAVITY * dt;
             player.position.y += yVelocity * dt;
@@ -1781,7 +1640,6 @@ function animate(time) {
                 yVelocity = 0;
             }
         } else if (player.position.y < targetFloorY) {
-            // Smoothly ascend ramp slope
             player.position.y = targetFloorY;
         }
     }
@@ -1793,7 +1651,6 @@ function animate(time) {
         if (stumbleTimer <= 0) isStumbling = false;
     }
 
-    // Distance Score (Multiplier buff applied)
     const distGain = (currentSpeed * dt) / 5;
     distance += (activeBuffs.multiplier > 0) ? distGain * 2 : distGain;
     
@@ -1802,7 +1659,7 @@ function animate(time) {
     if (!isStumbling) gameSpeed += dt * 0.25;
 
     const targetX = currentLane * LANE_WIDTH;
-    player.position.x += (targetX - player.position.x) * 15 * dt;
+    player.position.x += (targetX - player.position.x) * 16 * dt;
 
     if (isRolling && activeBuffs.jetpack <= 0) {
         rollTimer -= dt;
@@ -1816,15 +1673,15 @@ function animate(time) {
         }
     }
 
-    // Cop Logic (Doesn't fly with jetpack)
+    // Cop Logic
     let copSpeed = gameSpeed;
     const distToPlayer = player.position.z - cop.position.z;
     
     if (isStumbling && activeBuffs.jetpack <= 0) {
         copSpeed = gameSpeed + 12;
     } else {
-        if (distToPlayer > 12) copSpeed = gameSpeed + 6;
-        else if (distToPlayer < 8) copSpeed = gameSpeed - 3;
+        if (distToPlayer > 10) copSpeed = gameSpeed + 6;
+        else if (distToPlayer < 6) copSpeed = gameSpeed - 3;
     }
     
     cop.position.z += copSpeed * dt;
@@ -1839,7 +1696,6 @@ function animate(time) {
     }
 
     updateCamera();
-    checkMapZones();
 
     // Cleanup World
     const lastSeg = trackSegments[trackSegments.length - 1];
@@ -1863,24 +1719,23 @@ function animate(time) {
     const playerBox = getPlayerHitbox();
 
     for (let i = coins.length - 1; i >= 0; i--) {
-        const coin = coins[i];
-        coin.rotation.z += 4 * dt;
+        const coinObj = coins[i];
+        if (coinObj.children[0]) coinObj.children[0].rotation.z += 4 * dt;
         
-        // Magnet Logic
         if(activeBuffs.magnet > 0) {
-            const dist = player.position.distanceTo(coin.position);
+            const dist = player.position.distanceTo(coinObj.position);
             if(dist < 20) {
-                coin.position.lerp(player.position, 12 * dt);
+                coinObj.position.lerp(player.position, 12 * dt);
             }
         }
         
-        const coinBox = new THREE.Box3().setFromObject(coin);
+        const coinBox = new THREE.Box3().setFromObject(coinObj);
         if (playerBox.intersectsBox(coinBox)) {
-            scene.remove(coin);
+            scene.remove(coinObj);
             coins.splice(i, 1);
-            coinsCollected += 10;
-        } else if (coin.position.z < player.position.z - 10) {
-            scene.remove(coin);
+            coinsCollected += 1;
+        } else if (coinObj.position.z < player.position.z - 10) {
+            scene.remove(coinObj);
             coins.splice(i, 1);
         }
     }
@@ -1901,23 +1756,21 @@ function animate(time) {
         }
     }
 
-    // Only process obstacles if not flying on Jetpack
     if(activeBuffs.jetpack <= 0) {
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obs = obstacles[i];
             const obsBox = new THREE.Box3().setFromObject(obs.mesh);
             
             if (obs.type === 'train') {
-                obsBox.min.x += 0.3; obsBox.max.x -= 0.3;
+                obsBox.min.x += 0.25; obsBox.max.x -= 0.25;
             } else {
                 obsBox.max.y -= 0.3;
             }
 
             if (playerBox.intersectsBox(obsBox)) {
                 if (obs.type === 'train') {
-                    // If on train roof or ascending a ramp, player doesn't die!
                     if (player.position.y >= 3.6 || (obs.hasRamp && player.position.z < obs.mesh.position.z - 4)) {
-                        // Safe on roof or on ramp
+                        // Safe on train roof / ramp
                     } else {
                         gameOver();
                     }

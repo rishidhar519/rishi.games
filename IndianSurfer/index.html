@@ -16,23 +16,29 @@
         <div id="ui-layer">
             <div id="active-powerups"></div>
             
+            <!-- Subway Surfers Header HUD -->
+            <div class="subway-hud">
+                <button id="pause-btn" class="hud-pause-btn" title="Pause">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="#fff">
+                        <rect x="6" y="4" width="4" height="16" rx="1.5"></rect>
+                        <rect x="14" y="4" width="4" height="16" rx="1.5"></rect>
+                    </svg>
+                </button>
+                <div class="hud-stats-right">
+                    <div class="hud-score-row">
+                        <span class="hud-multiplier" id="hud-mult-val">x1</span>
+                        <span class="hud-score" id="distance-val">000000</span>
+                    </div>
+                    <div class="hud-coins-row">
+                        <span class="hud-coins-count" id="coins-val">0</span>
+                        <span class="hud-coin-icon">🪙</span>
+                    </div>
+                </div>
+            </div>
+
             <div id="loading-screen" class="screen active">
                 <h1>LOADING 3D ASSETS...</h1>
                 <p>Please wait while we download realistic models.</p>
-            </div>
-            <div class="stats-container">
-                <div class="stat-box">
-                    <span class="stat-label">DISTANCE</span>
-                    <span class="stat-value" id="distance-val">0m</span>
-                </div>
-                <div class="stat-box coins-box">
-                    <span class="stat-label">MONEY (₹)</span>
-                    <span class="stat-value" id="coins-val">0</span>
-                </div>
-                <div class="stat-box total-coins-box">
-                    <span class="stat-label">TOTAL BANK (₹)</span>
-                    <span class="stat-value" id="total-coins-val">0</span>
-                </div>
             </div>
             
             <div id="start-screen" class="screen">
