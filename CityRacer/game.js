@@ -555,8 +555,11 @@ window.addEventListener('keyup', (e) => {
     if (key === 'arrowdown' || key === 's') input.brake = false;
 });
 
-// --- INVISIBLE FULL-SCREEN TOUCH & GESTURE CONTROLS ---
+// --- INVISIBLE FULL-SCREEN TOUCH & SLIDE CONTROLLER ---
 let garageTouchStartX = 0;
+let touchActive = false;
+let touchStartX = 0;
+let lastTouchX = 0;
 
 window.addEventListener('touchstart', (e) => {
     if (state === 'GARAGE' && e.touches.length > 0) {
@@ -564,34 +567,50 @@ window.addEventListener('touchstart', (e) => {
         return;
     }
 
-    if (state === 'PLAYING') {
-        for (let i = 0; i < e.touches.length; i++) {
-            const t = e.touches[i];
-            if (t.clientY < window.innerHeight * 0.75) {
-                if (t.clientX < window.innerWidth * 0.5) {
-                    input.left = true;
-                    input.right = false;
-                } else {
-                    input.right = true;
-                    input.left = false;
-                }
-            }
+    if (state === 'PLAYING' && e.touches.length > 0) {
+        touchActive = true;
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        lastTouchX = t.clientX;
+
+        // Immediate tap direction (Tap Left Half = Steer Left, Tap Right Half = Steer Right)
+        if (t.clientX < window.innerWidth * 0.5) {
+            input.left = true;
+            input.right = false;
+        } else {
+            input.right = true;
+            input.left = false;
         }
     }
 }, { passive: true });
 
 window.addEventListener('touchmove', (e) => {
-    if (state !== 'PLAYING') return;
-    for (let i = 0; i < e.touches.length; i++) {
-        const t = e.touches[i];
-        if (t.clientY < window.innerHeight * 0.75) {
-            if (t.clientX < window.innerWidth * 0.5) {
-                input.left = true;
-                input.right = false;
-            } else {
-                input.right = true;
-                input.left = false;
-            }
+    if (state !== 'PLAYING' || !touchActive || e.touches.length === 0) return;
+    
+    const t = e.touches[0];
+    const currentX = t.clientX;
+    const dragDeltaX = currentX - touchStartX;
+    const instantDeltaX = currentX - lastTouchX;
+    lastTouchX = currentX;
+
+    // Slide / Drag Direction Detection
+    const dragThreshold = 6; // minimum pixels to confirm slide direction
+    if (dragDeltaX < -dragThreshold || instantDeltaX < -1.5) {
+        // Sliding LEFT -> ALWAYS STEER LEFT
+        input.left = true;
+        input.right = false;
+    } else if (dragDeltaX > dragThreshold || instantDeltaX > 1.5) {
+        // Sliding RIGHT -> ALWAYS STEER RIGHT
+        input.right = true;
+        input.left = false;
+    } else {
+        // Fallback to screen half tap zone
+        if (currentX < window.innerWidth * 0.5) {
+            input.left = true;
+            input.right = false;
+        } else {
+            input.right = true;
+            input.left = false;
         }
     }
 }, { passive: true });
@@ -606,34 +625,39 @@ window.addEventListener('touchend', (e) => {
             currentCarIndex = (currentCarIndex + 1) % CARS.length;
             updateGarageDisplay();
         }
+        return;
     }
 
     if (state === 'PLAYING') {
         if (e.touches.length === 0) {
+            touchActive = false;
             input.left = false;
             input.right = false;
         } else {
-            let hasSteerTouch = false;
-            for (let i = 0; i < e.touches.length; i++) {
-                const t = e.touches[i];
-                if (t.clientY < window.innerHeight * 0.75) {
-                    hasSteerTouch = true;
-                    if (t.clientX < window.innerWidth * 0.5) {
-                        input.left = true;
-                        input.right = false;
-                    } else {
-                        input.right = true;
-                        input.left = false;
-                    }
-                }
-            }
-            if (!hasSteerTouch) {
-                input.left = false;
+            const t = e.touches[0];
+            const dragDeltaX = t.clientX - touchStartX;
+            if (dragDeltaX < -6) {
+                input.left = true;
                 input.right = false;
+            } else if (dragDeltaX > 6) {
+                input.right = true;
+                input.left = false;
+            } else if (t.clientX < window.innerWidth * 0.5) {
+                input.left = true;
+                input.right = false;
+            } else {
+                input.right = true;
+                input.left = false;
             }
         }
     }
 }, { passive: true });
+
+window.addEventListener('touchcancel', () => {
+    touchActive = false;
+    input.left = false;
+    input.right = false;
+});
 
 // Robust Tap & Click Listener Helper for Navigation Buttons
 function addTapListener(id, callback) {
